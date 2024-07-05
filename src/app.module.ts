@@ -22,9 +22,9 @@ import { UsersModule } from './users/users.module';
         database: configService.get('POSTGRES_DATABASE'),
         autoLoadEntities: true,
         synchronize: true,
-        extra: {
-          ssl: true,
-        },
+        // extra: {
+        //   ssl: true,
+        // },
       }),
       inject: [ConfigService],
     }),
