@@ -18,7 +18,7 @@ export abstract class User {
   @Column({ type: 'text', unique: true, nullable: false })
   email: string;
 
-  @Column({ type: 'text', length: 21, nullable: false })
+  @Column({ type: 'text', nullable: false })
   username: string;
 
   @Column({ type: 'text', nullable: false })
