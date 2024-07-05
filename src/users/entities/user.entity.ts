@@ -8,7 +8,7 @@ import {
 
 @Entity()
 @Index(['createdAt'])
-export abstract class Users {
+export abstract class User {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
