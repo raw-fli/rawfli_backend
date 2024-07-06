@@ -6,9 +6,11 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
+export type DecodedUserToken = Pick<User, 'id' | 'email' | 'username'>;
+
 @Entity()
 @Index(['createdAt'])
-export abstract class User {
+export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
