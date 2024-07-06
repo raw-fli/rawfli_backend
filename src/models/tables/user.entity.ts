@@ -12,17 +12,17 @@ export type DecodedUserToken = Pick<User, 'id' | 'email' | 'username'>;
 @Index(['createdAt'])
 export class User {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @CreateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
-  createdAt: Date;
+  createdAt!: Date;
 
   @Column({ type: 'text', unique: true, nullable: false })
-  email: string;
+  email!: string;
 
   @Column({ type: 'text', nullable: false })
-  username: string;
+  username!: string;
 
   @Column({ type: 'text', nullable: false })
-  password: string;
+  password!: string;
 }
