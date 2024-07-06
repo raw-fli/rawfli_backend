@@ -1,4 +1,4 @@
-import { Merge } from 'src/types';
+import { Merge } from '../../types';
 
 export interface ERROR {
   type: string;
