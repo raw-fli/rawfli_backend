@@ -6,7 +6,7 @@ import { TypedBody, TypedRoute } from '@nestia/core';
 import { CreateUserDto } from 'src/models/dtos/create-user.dto';
 import { createResponseForm, TryCatch } from 'src/types';
 import { DecodedUserToken } from 'src/models/tables/user.entity';
-import { ALREADY_CREATED_EMAIL } from 'src/config/errors/error';
+import { EMAIL_ALREADY_CREATED } from 'src/config/errors/error';
 import { isBusinessErrorGuard } from 'src/config/errors';
 
 @Controller('api/v1/auth')
@@ -20,7 +20,7 @@ export class AuthController {
   @TypedRoute.Post('signup')
   async signUp(
     @TypedBody() createUserDto: CreateUserDto,
-  ): Promise<TryCatch<DecodedUserToken, ALREADY_CREATED_EMAIL>> {
+  ): Promise<TryCatch<DecodedUserToken, EMAIL_ALREADY_CREATED>> {
     const createUserResponse = await this.usersService.create(createUserDto);
     if (isBusinessErrorGuard(createUserResponse)) {
       return createUserResponse;
