@@ -25,6 +25,6 @@ export class Comment extends CommonColumns {
   @OneToMany(() => Comment, (comment) => comment.parent)
   replies!: Comment[];
 
-  @ManyToOne(() => Comment, (comment) => comment.replies, { onDelete: 'CASCADE' })
-  parent!: Comment;
+  @ManyToOne(() => Comment, (comment) => comment.replies, { nullable: true, onDelete: 'CASCADE' })
+  parent: Comment;
 }
