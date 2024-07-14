@@ -13,11 +13,11 @@ import {
 import { Board } from './board.entity';
 import { Comment } from './comment.entity';
 import { Photo } from './photo.entity';
-import { TimeColumns }from '../common/time-columns';
+import { TimeColumns } from '../common/time-columns';
 import { User } from './user.entity';
 
 @Entity()
-@TableInheritance({ column: { type: "text", name: "type" } })
+@TableInheritance({ column: { type: 'text', name: 'type' } })
 export class Post extends TimeColumns {
   @PrimaryColumn()
   id!: number;
@@ -27,7 +27,10 @@ export class Post extends TimeColumns {
   @JoinColumn({ name: 'boardId' })
   board!: Board;
 
-  @ManyToOne(() => User, (user) => user.posts, { nullable: true, onDelete: 'SET NULL' })
+  @ManyToOne(() => User, (user) => user.posts, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
   author: User;
 
   @Column('text')
@@ -46,14 +49,14 @@ export class Post extends TimeColumns {
   comments!: Comment[];
 }
 
-@ChildEntity("community")
+@ChildEntity('community')
 export class CommunityPost extends Post {
   @ManyToMany(() => Photo, (photo) => photo.referencedInPosts)
   @JoinTable()
   referencedPhotos!: Photo[];
 }
 
-@ChildEntity("gallery")
+@ChildEntity('gallery')
 export class GalleryPost extends Post {
   @OneToMany(() => Photo, (photo) => photo.post)
   photos!: Photo[];

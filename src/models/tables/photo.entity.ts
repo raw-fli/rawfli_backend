@@ -15,11 +15,14 @@ export class Photo {
   id!: number;
 
   @ManyToOne(() => GalleryPost, (post) => post.photos, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: "postId", referencedColumnName: "id" })
-  @JoinColumn({ name: "postBoardId", referencedColumnName: "board" })
+  @JoinColumn({ name: 'postId', referencedColumnName: 'id' })
+  @JoinColumn({ name: 'postBoardId', referencedColumnName: 'board' })
   post!: GalleryPost;
 
-  @ManyToOne(() => User, (user) => user.photos, { nullable: true, onDelete: 'SET NULL' })
+  @ManyToOne(() => User, (user) => user.photos, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
   author: User;
 
   @Column({ type: 'text' })
