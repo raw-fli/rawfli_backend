@@ -6,8 +6,8 @@ import {
   ManyToMany,
   OneToMany,
 } from 'typeorm';
-import { CommonColumns } from '../common/common-columns';
 import { Comment } from './comment.entity';
+import { CommonColumns } from '../common/common-columns';
 import { Photo } from './photo.entity';
 import { Post } from './post.entity';
 
