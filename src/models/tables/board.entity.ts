@@ -1,12 +1,7 @@
-import {
-  Column,
-  Entity,
-  OneToMany,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Post } from './post.entity';
 
-type BoardType = "community" | "gallery";
+type BoardType = 'community' | 'gallery';
 
 @Entity()
 export class Board {

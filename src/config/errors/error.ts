@@ -1,5 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/no-namespace
-
 import { ERROR } from '.';
 
 export interface EMAIL_ALREADY_CREATED extends ERROR {
