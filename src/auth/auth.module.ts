@@ -29,4 +29,4 @@ import { UsersService } from 'src/providers/users.service';
   providers: [AuthService, UsersService],
   exports: [AuthService],
 })
-export class AuthModule {}
+export class AuthModule { }
