@@ -5,6 +5,7 @@ import { HttpExceptionFilter } from './auth/common/filters/http-exception.filter
 import * as compression from 'compression';
 import { ValidationError } from 'class-validator';
 import { extractConstraints } from './utils/utils';
+import { SwaggerSetting } from './config/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -12,6 +13,8 @@ async function bootstrap() {
   app.useGlobalFilters(new HttpExceptionFilter());
   app.use(compression());
   app.enableCors();
+
+  SwaggerSetting(app);
 
   app.useGlobalPipes(new ValidationPipe({
     exceptionFactory: (errors) => {
