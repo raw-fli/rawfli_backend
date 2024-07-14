@@ -25,6 +25,6 @@ export class Board {
   @OneToMany(() => Post, (post) => post.board)
   posts!: Post[];
 
-  @Column({ default: '0' })
+  @Column({ default: 0 })
   maxPostId!: number;
 }
