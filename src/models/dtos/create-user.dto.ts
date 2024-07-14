@@ -1,14 +1,7 @@
-import { IsEmail, IsString, MaxLength, MinLength } from 'class-validator';
+import { tags } from "typia";
 
-export class CreateUserDto {
-  @IsEmail()
-  public email!: string;
-
-  @IsString()
-  @MaxLength(21)
-  public username!: string;
-
-  @IsString()
-  @MinLength(8)
-  public password!: string;
+export interface CreateUserDto {
+  email: string & tags.Format<"email">;
+  username: string & tags.MaxLength<21>;
+  password: string & tags.MinLength<8>;
 }
