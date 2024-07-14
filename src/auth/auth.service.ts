@@ -9,7 +9,7 @@ export class AuthService {
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
-  ) {}
+  ) { }
 
   async validateUser(
     email: string,
@@ -19,7 +19,6 @@ export class AuthService {
     if (user) {
       const isRightPass = await bcrypt.compare(password, user.password);
       if (isRightPass) {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { password, ...rest } = user;
         return rest;
       }
