@@ -21,7 +21,7 @@ import { AuthModule } from './auth/auth.module';
         username: configService.get('POSTGRES_USER'),
         password: configService.get('POSTGRES_PASSWORD'),
         database: configService.get('POSTGRES_DATABASE'),
-        entities: [path.join(__dirname, './models/tables/*.entity.ts')],
+        entities: [path.join(__dirname, './models/tables/*.entity.js')],
         synchronize: true,
         // extra: {
         //   ssl: true,
