@@ -27,11 +27,8 @@ export class Post extends TimeColumns {
   @JoinColumn({ name: 'boardId' })
   board!: Board;
 
-  @ManyToOne(() => User, (user) => user.posts, {
-    nullable: true,
-    onDelete: 'SET NULL',
-  })
-  author: User;
+  @ManyToOne(() => User, (user) => user.posts)
+  author!: User;
 
   @Column('text')
   title!: string;

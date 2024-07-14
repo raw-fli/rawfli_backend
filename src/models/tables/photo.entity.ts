@@ -19,11 +19,8 @@ export class Photo {
   @JoinColumn({ name: 'postBoardId', referencedColumnName: 'board' })
   post!: GalleryPost;
 
-  @ManyToOne(() => User, (user) => user.photos, {
-    nullable: true,
-    onDelete: 'SET NULL',
-  })
-  author: User;
+  @ManyToOne(() => User, (user) => user.photos)
+  author!: User;
 
   @Column({ type: 'text' })
   description!: string;

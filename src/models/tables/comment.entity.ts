@@ -10,11 +10,8 @@ export class Comment extends CommonColumns {
   @JoinColumn({ name: 'postBoardId', referencedColumnName: 'board' })
   post!: Post;
 
-  @ManyToOne(() => User, (user) => user.comments, {
-    nullable: true,
-    onDelete: 'SET NULL',
-  })
-  author: User;
+  @ManyToOne(() => User, (user) => user.comments)
+  author!: User;
 
   @Column({ type: 'text' })
   content!: string;
@@ -22,9 +19,6 @@ export class Comment extends CommonColumns {
   @OneToMany(() => Comment, (comment) => comment.parent)
   replies!: Comment[];
 
-  @ManyToOne(() => Comment, (comment) => comment.replies, {
-    nullable: true,
-    onDelete: 'CASCADE',
-  })
-  parent: Comment;
+  @ManyToOne(() => Comment, (comment) => comment.replies, { onDelete: 'CASCADE' })
+  parent?: Comment;
 }
