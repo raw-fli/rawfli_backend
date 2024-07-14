@@ -13,7 +13,7 @@ import {
 import { Board } from './board.entity';
 import { Comment } from './comment.entity';
 import { Photo } from './photo.entity';
-import { TimeColumns }from '../common/time-columns'
+import { TimeColumns }from '../common/time-columns';
 import { User } from './user.entity';
 
 @Entity()

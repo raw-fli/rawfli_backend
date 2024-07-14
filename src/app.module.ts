@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import * as path from 'path';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -20,7 +21,7 @@ import { AuthModule } from './auth/auth.module';
         username: configService.get('POSTGRES_USER'),
         password: configService.get('POSTGRES_PASSWORD'),
         database: configService.get('POSTGRES_DATABASE'),
-        autoLoadEntities: true,
+        entities: [path.join(__dirname, './models/tables/*.ts')],
         synchronize: true,
         // extra: {
         //   ssl: true,
