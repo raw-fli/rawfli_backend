@@ -1,4 +1,8 @@
 {
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": "explicit"
+      },
     "editor.formatOnSave": false,
-    "editor.tabSize": 2
+    "editor.tabSize": 2,
+    "eslint.format.enable": true
 }
