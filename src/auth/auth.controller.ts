@@ -1,13 +1,16 @@
-import { Controller } from '@nestjs/common';
+import { Controller, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UsersService } from 'src/providers/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { TypedBody, TypedRoute } from '@nestia/core';
-import { createResponseForm, TryCatch } from 'src/types';
+import { createResponseForm, Try, TryCatch } from 'src/types';
 import { DecodedUserToken } from 'src/models/tables/user.entity';
 import { EMAIL_ALREADY_CREATED } from 'src/config/errors/error';
 import { isBusinessErrorGuard } from 'src/config/errors';
 import { CreateUserDto } from 'src/models/dtos/create-user.dto';
+import { LocalGuard } from './guards/local.guard';
+import { UserDecorator } from 'src/common/decorators/user.decorator';
+import { LoginUserDto } from 'src/models/dtos/login-user.dto';
 
 @Controller('api/v1/auth')
 export class AuthController {
@@ -28,5 +31,12 @@ export class AuthController {
 
     const { password, createdAt, ...user } = createUserResponse;
     return createResponseForm(user);
+  }
+
+  @UseGuards(LocalGuard)
+  @TypedRoute.Post('login')
+  login(@UserDecorator() user: DecodedUserToken, @TypedBody() body: LoginUserDto): Try<string> {
+    const token = this.jwtService.sign({ ...user });
+    return createResponseForm(token);
   }
 }

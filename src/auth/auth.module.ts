@@ -8,6 +8,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from 'src/models/tables/user.entity';
 import { UsersModule } from 'src/modules/users.module';
 import { UsersService } from 'src/providers/users.service';
+import { LocalStrategy } from './strategies/local.strategy';
+import { JwtStrategy } from './strategies/jwt.strategy';
 
 @Module({
   imports: [
@@ -17,7 +19,7 @@ import { UsersService } from 'src/providers/users.service';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
         return {
-          secret: configService.get('ACCESS_KEY'),
+          secret: configService.get('SECRET_KEY'),
           signOptions: { algorithm: 'HS256', expiresIn: '1h' },
         };
       },
@@ -26,7 +28,7 @@ import { UsersService } from 'src/providers/users.service';
     UsersModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, UsersService],
+  providers: [AuthService, UsersService, LocalStrategy, JwtStrategy],
   exports: [AuthService],
 })
 export class AuthModule { }

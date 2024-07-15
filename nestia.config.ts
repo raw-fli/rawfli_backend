@@ -11,6 +11,13 @@ const NESTIA_CONFIG: INestiaConfig = {
   distribute: 'packages/api',
   swagger: {
     output: 'dist/swagger.json',
+    security: {
+      bearer: {
+        type: 'apiKey',
+        in: 'header',
+        name: 'Authorization',
+      }
+    }
   },
 };
 
