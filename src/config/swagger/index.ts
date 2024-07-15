@@ -9,7 +9,7 @@ export const SwaggerSetting = (app: INestApplication) => {
   const swaggerDocument = JSON.parse(swaggerConfig);
   const configService = app.get(ConfigService);
 
-  swaggerDocument.servers.at(0).url = configService.get('DOMAIN');
+  swaggerDocument.servers = configService.get('DOMAIN');
 
-  SwaggerModule.setup('api/v1/swagger', app, swaggerDocument);
+  SwaggerModule.setup('', app, swaggerDocument);
 };
