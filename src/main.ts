@@ -4,7 +4,7 @@ import { BadRequestException, ClassSerializerInterceptor, ValidationPipe } from 
 import { HttpExceptionFilter } from './auth/common/filters/http-exception.filter';
 import * as compression from 'compression';
 import { ValidationError } from 'class-validator';
-import { extractConstraints } from './utils/utils';
+import { extractConstraints } from './common/utils/utils';
 import { SwaggerSetting } from './config/swagger';
 
 async function bootstrap() {
