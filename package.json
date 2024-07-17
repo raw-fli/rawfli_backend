@@ -25,6 +25,7 @@
     "prepare": "ts-patch install && typia patch"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.614.0",
     "@nestia/core": "^3.4.3",
     "@nestia/e2e": "^0.6.0",
     "@nestia/fetcher": "^3.4.3",
