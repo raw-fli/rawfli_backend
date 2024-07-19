@@ -14,6 +14,9 @@ export class Photo {
   @PrimaryGeneratedColumn('uuid')
   id!: number;
 
+  @Column()
+  key!: string;
+
   @ManyToOne(() => GalleryPost, (post) => post.photos, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'postId', referencedColumnName: 'id' })
   @JoinColumn({ name: 'postBoardId', referencedColumnName: 'board' })
