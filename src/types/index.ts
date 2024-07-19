@@ -1,9 +1,11 @@
+import type { ERROR } from '../config/legacy/error';
+
 export type Merge<F, S> = {
   [K in keyof (F & S)]: K extends keyof S
-    ? S[K]
-    : K extends keyof F
-      ? F[K]
-      : never;
+  ? S[K]
+  : K extends keyof F
+  ? F[K]
+  : never;
 };
 
 export interface ResponseForm<T> {
@@ -12,6 +14,9 @@ export interface ResponseForm<T> {
   requestToResponse?: `${number}ms`;
   data: T;
 }
+
+export type KeyOfError = keyof typeof ERROR;
+export type ValueOfError = (typeof ERROR)[KeyOfError];
 
 export type ERROR = { result: false; code: number; data: string };
 
@@ -29,3 +34,7 @@ export function createResponseForm<T>(
     data,
   } as const;
 }
+
+
+export type Push<T extends any[], U> = [...T, U];
+export type NTuple<N extends number, T extends any[] = []> = T['length'] extends N ? T : NTuple<N, Push<T, any>>;
