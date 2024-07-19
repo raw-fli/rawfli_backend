@@ -1,13 +1,11 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany } from 'typeorm';
 import { Post } from './post.entity';
+import { CommonColumns } from '../common/common-columns';
 
 type BoardType = 'community' | 'gallery';
 
 @Entity()
-export class Board {
-  @PrimaryGeneratedColumn()
-  id!: number;
-
+export class Board extends CommonColumns {
   @Column({ type: 'text' })
   type!: BoardType;
 
