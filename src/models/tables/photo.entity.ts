@@ -4,13 +4,19 @@ import {
   JoinColumn,
   ManyToMany,
   ManyToOne,
+  PrimaryGeneratedColumn,
 } from 'typeorm';
 import { CommunityPost, GalleryPost } from './post.entity';
 import { User } from './user.entity';
-import { CommonColumns } from '../common/common-columns';
 
 @Entity()
-export class Photo extends CommonColumns {
+export class Photo {
+  @PrimaryGeneratedColumn('uuid')
+  id!: number;
+
+  @Column()
+  key!: string;
+
   @ManyToOne(() => GalleryPost, (post) => post.photos, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'postId', referencedColumnName: 'id' })
   @JoinColumn({ name: 'postBoardId', referencedColumnName: 'board' })
