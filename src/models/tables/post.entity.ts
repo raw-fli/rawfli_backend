@@ -13,13 +13,15 @@ import {
 import { Board } from './board.entity';
 import { Comment } from './comment.entity';
 import { Photo } from './photo.entity';
-import { TimeColumns } from '../common/time-columns';
 import { User } from './user.entity';
-import { CommonColumns } from '../common/common-columns';
+import { TimeColumns } from '../common/time-columns';
 
 @Entity()
 @TableInheritance({ column: { type: 'text', name: 'type' } })
-export class Post extends CommonColumns {
+export class Post extends TimeColumns {
+  @PrimaryColumn()
+  id!: number;
+
   @PrimaryColumn({ type: 'int', name: 'boardId' })
   @ManyToOne(() => Board, (board) => board.posts)
   @JoinColumn({ name: 'boardId' })
