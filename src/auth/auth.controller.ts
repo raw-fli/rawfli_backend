@@ -36,7 +36,7 @@ export class AuthController {
   @UseGuards(LocalGuard)
   @TypedRoute.Post('login')
   login(@UserDecorator() user: DecodedUserToken, @TypedBody() body: LoginUserDto): Try<string> {
-    const token = this.jwtService.sign({ ...user });
+    const token = this.authService.userLogin(user);
     return createResponseForm(token);
   }
 }
