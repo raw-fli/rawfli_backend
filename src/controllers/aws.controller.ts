@@ -3,7 +3,10 @@ import { Controller, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/co
 import { FileInterceptor } from "@nestjs/platform-express";
 import { ApiConsumes } from "@nestjs/swagger";
 import { JwtGuard } from "src/auth/guards/jwt.guard";
+import { UserDecorator } from "src/common/decorators/user.decorator";
+import { DecodedUserToken } from "src/models/tables/user.entity";
 import { AwsService } from "src/providers/aws.service";
+import { createResponseForm } from "src/types";
 
 @Controller('api/v1/aws')
 export class AwsController {
@@ -14,8 +17,10 @@ export class AwsController {
   @TypedRoute.Post('upload')
   @UseInterceptors(FileInterceptor('file'))
   async uploadFile(
-    @UploadedFile() image: Express.Multer.File
+    @UserDecorator() user: DecodedUserToken,
+    @UploadedFile() image: Express.Multer.File,
   ): Promise<string> {
-    return await this.awsService.uploadImage(image);
+    const photo = await this.awsService.uploadImage(user, image);
+    return createResponseForm(photo);
   }
 }
