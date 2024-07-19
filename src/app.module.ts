@@ -9,6 +9,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { HttpExceptionFilter } from './auth/common/filters/http-exception.filter';
 import { CacheModule } from '@nestjs/cache-manager';
 import { LoggerMiddleware } from './common/middlewares/logger.middlewares';
+import { AwsModule } from './modules/aws.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { LoggerMiddleware } from './common/middlewares/logger.middlewares';
       inject: [ConfigService],
     }),
     AuthModule,
+    AwsModule,
   ],
   controllers: [],
   providers: [
