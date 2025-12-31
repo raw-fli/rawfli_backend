@@ -1,8 +1,7 @@
-import { Controller, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UsersService } from 'src/providers/users.service';
 import { JwtService } from '@nestjs/jwt';
-import { TypedBody, TypedRoute } from '@nestia/core';
 import { createResponseForm, Try, TryCatch } from 'src/types';
 import { DecodedUserToken } from 'src/models/tables/user.entity';
 import { EMAIL_ALREADY_CREATED } from 'src/config/errors/error';
@@ -20,9 +19,9 @@ export class AuthController {
     private readonly usersService: UsersService,
   ) { }
 
-  @TypedRoute.Post('signup')
+  @Post('signup')
   async signUp(
-    @TypedBody() createUserDto: CreateUserDto
+    @Body() createUserDto: CreateUserDto
   ): Promise<TryCatch<DecodedUserToken, EMAIL_ALREADY_CREATED>> {
     const createUserResponse = await this.usersService.create(createUserDto);
     if (isBusinessErrorGuard(createUserResponse)) {
@@ -34,8 +33,8 @@ export class AuthController {
   }
 
   @UseGuards(LocalGuard)
-  @TypedRoute.Post('login')
-  login(@UserDecorator() user: DecodedUserToken, @TypedBody() body: LoginUserDto): Try<string> {
+  @Post('login')
+  login(@UserDecorator() user: DecodedUserToken, @Body() body: LoginUserDto): Try<string> {
     const token = this.authService.userLogin(user);
     return createResponseForm(token);
   }

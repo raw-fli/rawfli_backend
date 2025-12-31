@@ -4,7 +4,6 @@ import { EMAIL_ALREADY_CREATED } from 'src/config/errors/error';
 import { CreateUserDto } from 'src/models/dtos/create-user.dto';
 import { DecodedUserToken, User } from 'src/models/tables/user.entity';
 import { Repository } from 'typeorm';
-import typia from 'typia';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -20,9 +19,9 @@ export class UsersService {
       where: { email: createUserDto.email },
     });
 
-    if (alreadyCreatedEmail) {
-      return typia.random<EMAIL_ALREADY_CREATED>();
-    }
+    // if (alreadyCreatedEmail) {
+    //   return typia.random<EMAIL_ALREADY_CREATED>();
+    // }
 
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
 
