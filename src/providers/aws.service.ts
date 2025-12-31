@@ -34,6 +34,8 @@ export class AwsService {
 
     await this.s3Client.send(command);
     const newPhoto = new Photo();
+    newPhoto.key = key;
+    newPhoto.description = ''; // # TODO: description
     return await this.photoRepository.save(newPhoto);
   }
 }
