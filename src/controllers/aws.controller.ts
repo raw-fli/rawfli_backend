@@ -15,7 +15,7 @@ export class AwsController {
   @UseGuards(JwtGuard)
   @ApiConsumes('multipart/form-data')
   @Post('upload')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(FileInterceptor('image'))
   async uploadFile(
     @UserDecorator() user: DecodedUserToken,
     @UploadedFile() image: Express.Multer.File,
