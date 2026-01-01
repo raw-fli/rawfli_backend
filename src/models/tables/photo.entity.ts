@@ -25,8 +25,8 @@ export class Photo {
   @ManyToOne(() => User, (user) => user.photos)
   author!: User;
 
-  @Column({ type: 'text' })
-  description!: string;
+  @Column({ type: 'text', nullable: true })
+  description?: string;
 
   @ManyToMany(() => User, (user) => user.likedPhotos)
   likes!: User[];
