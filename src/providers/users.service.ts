@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EMAIL_ALREADY_CREATED } from 'src/config/errors/error';
+import { ErrorCodes } from 'src/common/exception/error';
 import { CreateUserDto } from 'src/models/dtos/create-user.dto';
 import { DecodedUserToken, User } from 'src/models/tables/user.entity';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
+import { RpcException } from '@nestjs/microservices';
 
 @Injectable()
 export class UsersService {
@@ -14,14 +15,14 @@ export class UsersService {
 
   async create(
     createUserDto: CreateUserDto,
-  ): Promise<User | EMAIL_ALREADY_CREATED> {
+  ): Promise<User> {
     const alreadyCreatedEmail = await this.usersRepository.findOne({
       where: { email: createUserDto.email },
     });
 
-    // if (alreadyCreatedEmail) {
-    //   return typia.random<EMAIL_ALREADY_CREATED>();
-    // }
+    if (alreadyCreatedEmail) {
+      throw new RpcException(ErrorCodes.BISINESS.EMAIL_ALREADY_CREATED);
+    }
 
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
 

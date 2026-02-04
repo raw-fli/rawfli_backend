@@ -1,4 +1,4 @@
-import type { ERROR } from '../config/legacy/error';
+import { ErrorCodes } from "src/common/exception/error";
 
 export type Merge<F, S> = {
   [K in keyof (F & S)]: K extends keyof S
@@ -15,8 +15,8 @@ export interface ResponseForm<T> {
   data: T;
 }
 
-export type KeyOfError = keyof typeof ERROR;
-export type ValueOfError = (typeof ERROR)[KeyOfError];
+export type KeyOfError = keyof typeof ErrorCodes;
+export type ValueOfError = (typeof ErrorCodes)[KeyOfError];
 
 export type ERROR = { result: false; code: number; data: string };
 

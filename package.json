@@ -37,14 +37,15 @@
     "testEnvironment": "node"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.958.0",
+    "@aws-sdk/client-s3": "^3.893.0",
     "@nestjs/cache-manager": "^3.1.0",
     "@nestjs/cli": "^11.0.14",
-    "@nestjs/config": "^4.0.2",
+    "@nestjs/config": "^1.1.5",
     "@nestjs/jwt": "^11.0.2",
+    "@nestjs/microservices": "^11.1.12",
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.1.11",
-    "@nestjs/swagger": "^11.2.3",
+    "@nestjs/swagger": "^11.2.5",
     "@nestjs/testing": "^11.1.11",
     "@nestjs/throttler": "^6.5.0",
     "@nestjs/typeorm": "^11.0.0",
