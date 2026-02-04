@@ -2,10 +2,9 @@ import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UsersService } from 'src/providers/users.service';
 import { JwtService } from '@nestjs/jwt';
-import { createResponseForm, Try, TryCatch } from 'src/types';
+import { createResponseForm, ERROR, Try, TryCatch } from 'src/types';
 import { DecodedUserToken } from 'src/models/tables/user.entity';
-import { EMAIL_ALREADY_CREATED } from 'src/config/errors/error';
-import { isBusinessErrorGuard } from 'src/config/errors';
+import { ErrorCodes } from 'src/common/exception/error';
 import { CreateUserDto } from 'src/models/dtos/create-user.dto';
 import { LocalGuard } from './guards/local.guard';
 import { UserDecorator } from 'src/common/decorators/user.decorator';
@@ -22,11 +21,8 @@ export class AuthController {
   @Post('signup')
   async signUp(
     @Body() createUserDto: CreateUserDto
-  ): Promise<TryCatch<DecodedUserToken, EMAIL_ALREADY_CREATED>> {
+  ): Promise<TryCatch<DecodedUserToken, ERROR>> {
     const createUserResponse = await this.usersService.create(createUserDto);
-    if (isBusinessErrorGuard(createUserResponse)) {
-      return createUserResponse;
-    }
 
     const { password, createdAt, ...user } = createUserResponse;
     return createResponseForm(user);
