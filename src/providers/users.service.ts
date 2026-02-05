@@ -21,7 +21,7 @@ export class UsersService {
     });
 
     if (alreadyCreatedEmail) {
-      throw new RpcException(ErrorCodes.BISINESS.EMAIL_ALREADY_CREATED);
+      throw new RpcException(ErrorCodes.BUSINESS.EMAIL_ALREADY_CREATED);
     }
 
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);

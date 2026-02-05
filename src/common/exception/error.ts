@@ -1,5 +1,5 @@
 export const ErrorCodes = {
-  BISINESS: {
+  BUSINESS: {
     EMAIL_ALREADY_CREATED: {
       code: 4001,
       data: '이미 생성된 이메일입니다.',
