@@ -1,10 +1,8 @@
 import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UsersService } from 'src/providers/users.service';
-import { JwtService } from '@nestjs/jwt';
 import { createResponseForm, ERROR, Try, TryCatch } from 'src/types';
 import { DecodedUserToken } from 'src/models/tables/user.entity';
-import { ErrorCodes } from 'src/common/exception/error';
 import { CreateUserDto } from 'src/models/dtos/create-user.dto';
 import { LocalGuard } from './guards/local.guard';
 import { UserDecorator } from 'src/common/decorators/user.decorator';
