@@ -1,3 +1,5 @@
+declare const module: any;
+
 import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { BadRequestException, ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
@@ -29,6 +31,11 @@ async function bootstrap() {
     whitelist: true,
     transform: true,
   }));
+
+  if (module.hot) {
+    module.hot.accept();
+    module.hot.dispose(() => app.close());
+  }
 
   await app.listen(3000);
 }
