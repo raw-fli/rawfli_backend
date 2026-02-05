@@ -14,7 +14,6 @@ import { LoginUserDto } from 'src/models/dtos/login-user.dto';
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
-    private readonly jwtService: JwtService,
     private readonly usersService: UsersService,
   ) { }
 
