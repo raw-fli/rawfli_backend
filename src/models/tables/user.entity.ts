@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { Comment } from './comment.entity';
 import { CommonColumns } from '../common/common-columns';
+import { Image } from './image.entity';
 import { Photo } from './photo.entity';
 import { Post } from './post.entity';
 
@@ -30,6 +31,9 @@ export class User extends CommonColumns {
 
   @OneToMany(() => Comment, (comment) => comment.author)
   comments!: Comment[];
+
+  @OneToMany(() => Image, (image) => image.uploader)
+  images!: Image[];
 
   @OneToMany(() => Photo, (photo) => photo.author)
   photos!: Photo[];
