@@ -8,14 +8,16 @@ import {
 } from 'typeorm';
 import { CommunityPost, GalleryPost } from './post.entity';
 import { User } from './user.entity';
+import { Image } from './image.entity';
 
 @Entity()
 export class Photo {
   @PrimaryGeneratedColumn('uuid')
-  id!: number;
+  id!: string;
 
-  @Column()
-  key!: string;
+  @ManyToOne(() => Image, (image) => image.photos, { eager: true })
+  @JoinColumn()
+  image!: Image;
 
   @ManyToOne(() => GalleryPost, (post) => post.photos, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'postId', referencedColumnName: 'id' })

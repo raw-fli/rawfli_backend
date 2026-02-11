@@ -3,7 +3,7 @@ import { FileInterceptor } from "@nestjs/platform-express";
 import { ApiConsumes } from "@nestjs/swagger";
 import { JwtGuard } from "src/auth/guards/jwt.guard";
 import { UserDecorator } from "src/common/decorators/user.decorator";
-import { Photo } from "src/models/tables/photo.entity";
+import { Image } from "src/models/tables/image.entity";
 import { DecodedUserToken } from "src/models/tables/user.entity";
 import { AwsService } from "src/providers/aws.service";
 import { createResponseForm, Try } from "src/types";
@@ -19,8 +19,8 @@ export class AwsController {
   async uploadFile(
     @UserDecorator() user: DecodedUserToken,
     @UploadedFile() image: Express.Multer.File,
-  ): Promise<Try<Photo>> {
-    const photo = await this.awsService.uploadImage(user, image);
-    return createResponseForm(photo);
+  ): Promise<Try<Image>> {
+    const imageEntity = await this.awsService.uploadImage(user, image);
+    return createResponseForm(imageEntity);
   }
 }
