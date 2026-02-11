@@ -1,5 +1,4 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import * as path from 'path';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from './modules/users.module';
@@ -10,6 +9,12 @@ import { HttpExceptionFilter } from './auth/common/filters/http-exception.filter
 import { CacheModule } from '@nestjs/cache-manager';
 import { LoggerMiddleware } from './common/middlewares/logger.middlewares';
 import { AwsModule } from './modules/aws.module';
+import { User } from './models/tables/user.entity';
+import { Post, CommunityPost, GalleryPost } from './models/tables/post.entity';
+import { Comment } from './models/tables/comment.entity';
+import { Photo } from './models/tables/photo.entity';
+import { Image } from './models/tables/image.entity';
+import { Board } from './models/tables/board.entity';
 
 @Module({
   imports: [
@@ -27,7 +32,7 @@ import { AwsModule } from './modules/aws.module';
         username: configService.get('POSTGRES_USER'),
         password: configService.get('POSTGRES_PASSWORD'),
         database: configService.get('POSTGRES_DATABASE'),
-        entities: [path.join(__dirname, './models/tables/*.entity.js')],
+        entities: [User, Post, CommunityPost, GalleryPost, Comment, Photo, Image, Board],
         synchronize: true,
         // extra: {
         //   ssl: true,
