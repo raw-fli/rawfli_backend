@@ -3,10 +3,10 @@ import { AuthService } from './auth.service';
 import { UsersService } from 'src/providers/users.service';
 import { createResponseForm, ERROR, Try, TryCatch } from 'src/types';
 import { DecodedUserToken } from 'src/models/tables/user.entity';
-import { CreateUserDto } from 'src/models/dtos/create-user.dto';
+import { CreateUserDto } from 'src/models/dtos/request/create-user.dto';
 import { LocalGuard } from './guards/local.guard';
 import { UserDecorator } from 'src/common/decorators/user.decorator';
-import { LoginUserDto } from 'src/models/dtos/login-user.dto';
+import { LoginUserDto } from 'src/models/dtos/request/login-user.dto';
 
 @Controller('api/v1/auth')
 export class AuthController {
