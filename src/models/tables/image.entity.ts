@@ -1,12 +1,20 @@
-import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { BeforeInsert, Column, Entity, ManyToOne, OneToMany, PrimaryColumn } from 'typeorm';
+import { v7 as uuidv7 } from 'uuid';
 import { CreatedAtColumn } from '../common/created-at.column';
 import { User } from './user.entity';
 import { Photo } from './photo.entity';
 
 @Entity()
 export class Image extends CreatedAtColumn {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryColumn('uuid')
   id!: string;
+
+  @BeforeInsert()
+  generateId() {
+    if (!this.id) {
+      this.id = uuidv7();
+    }
+  }
 
   @Column({ type: 'text', unique: true })
   key!: string;
