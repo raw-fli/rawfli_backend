@@ -24,7 +24,8 @@ export class AwsService {
   }
 
   async uploadImage(user: DecodedUserToken, file: Express.Multer.File) {
-    const key = `${Date.now()}-${file.originalname}`;
+    const originalName = Buffer.from(file.originalname, 'latin1').toString('utf8');
+    const key = `${Date.now()}-${originalName}`;
     const command = new PutObjectCommand({
       Bucket: this.configService.get('AWS_S3_BUCKET'),
       Key: key,
