@@ -1,4 +1,4 @@
-import { ErrorCodes } from "src/common/exception/error";
+import { ErrorCode } from "src/common/exception/error";
 
 export type Merge<F, S> = {
   [K in keyof (F & S)]: K extends keyof S
@@ -15,10 +15,7 @@ export interface ResponseForm<T> {
   data: T;
 }
 
-export type KeyOfError = keyof typeof ErrorCodes;
-export type ValueOfError = (typeof ErrorCodes)[KeyOfError];
-
-export type ERROR = { result: false; code: number; data: string };
+export type ERROR = { result: false; code: ErrorCode; data: string };
 
 export type Try<T> = ResponseForm<T>;
 export type TryCatch<T, E extends ERROR> = ResponseForm<T> | E;
