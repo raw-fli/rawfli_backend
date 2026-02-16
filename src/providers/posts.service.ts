@@ -113,7 +113,7 @@ export class PostsService {
 
     const post = await this.postRepository.findOne({
       where: { id: postId, board: boardId as any },
-      relations: ['author', 'comments', 'comments.author', 'comments.replies', 'comments.replies.author', 'likes'],
+      relations: ['author', 'comments', 'comments.parent', 'comments.author', 'comments.replies', 'comments.replies.author', 'likes'],
     });
 
     if (!post) {
@@ -122,6 +122,8 @@ export class PostsService {
 
     post.views += 1;
     await this.postRepository.save(post);
+
+    post.comments = post.comments?.filter((c) => !c.parent) ?? [];
 
     const dto = plainToInstance(PostResponseDto, post, { excludeExtraneousValues: true });
     dto.likesCount = post.likes?.length ?? 0;
