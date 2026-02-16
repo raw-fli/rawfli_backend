@@ -9,6 +9,8 @@ import { HttpExceptionFilter } from './auth/common/filters/http-exception.filter
 import { CacheModule } from '@nestjs/cache-manager';
 import { LoggerMiddleware } from './common/middlewares/logger.middlewares';
 import { AwsModule } from './modules/aws.module';
+import { BoardsModule } from './modules/boards.module';
+import { PostsModule } from './modules/posts.module';
 import { User } from './models/tables/user.entity';
 import { Post, CommunityPost, GalleryPost } from './models/tables/post.entity';
 import { Comment } from './models/tables/comment.entity';
@@ -42,6 +44,8 @@ import { Board } from './models/tables/board.entity';
     }),
     AuthModule,
     AwsModule,
+    BoardsModule,
+    PostsModule,
   ],
   controllers: [],
   providers: [
