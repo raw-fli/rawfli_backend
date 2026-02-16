@@ -6,6 +6,7 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
@@ -13,7 +14,7 @@ import { UserDecorator } from 'src/common/decorators/user.decorator';
 import { CreateCommentDto } from 'src/models/dtos/request/create-comment.dto';
 import { CreatePostDto } from 'src/models/dtos/request/create-post.dto';
 import { CommentResponseDto } from 'src/models/dtos/response/comment.response.dto';
-import { PostResponseDto } from 'src/models/dtos/response/post.response.dto';
+import { PostListResponseDto, PostResponseDto } from 'src/models/dtos/response/post.response.dto';
 import { DecodedUserToken } from 'src/models/tables/user.entity';
 import { PostsService } from 'src/providers/posts.service';
 import { createResponseForm, Try } from 'src/types';
@@ -21,6 +22,20 @@ import { createResponseForm, Try } from 'src/types';
 @Controller('api/v1/boards/:boardId/posts')
 export class PostsController {
   constructor(private readonly postsService: PostsService) { }
+
+  @Get()
+  async getPosts(
+    @Param('boardId', ParseIntPipe) boardId: number,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ): Promise<Try<PostListResponseDto>> {
+    const result = await this.postsService.getPosts(
+      boardId,
+      page ? parseInt(page, 10) : 1,
+      limit ? parseInt(limit, 10) : 20,
+    );
+    return createResponseForm(result);
+  }
 
   @UseGuards(JwtGuard)
   @Post()
