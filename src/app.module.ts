@@ -17,6 +17,7 @@ import { Comment } from './models/tables/comment.entity';
 import { Photo } from './models/tables/photo.entity';
 import { Image } from './models/tables/image.entity';
 import { Board } from './models/tables/board.entity';
+import { DeletedPost } from './models/tables/deleted-post.entity';
 
 @Module({
   imports: [
@@ -34,7 +35,7 @@ import { Board } from './models/tables/board.entity';
         username: configService.get('POSTGRES_USER'),
         password: configService.get('POSTGRES_PASSWORD'),
         database: configService.get('POSTGRES_DATABASE'),
-        entities: [User, Post, CommunityPost, GalleryPost, Comment, Photo, Image, Board],
+        entities: [User, Post, CommunityPost, GalleryPost, Comment, Photo, Image, Board, DeletedPost],
         synchronize: true,
         // extra: {
         //   ssl: true,

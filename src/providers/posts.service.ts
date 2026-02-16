@@ -5,12 +5,14 @@ import { createError, ErrorCode } from 'src/common/exception/error';
 import { CreateCommentDto } from 'src/models/dtos/request/create-comment.dto';
 import { CreatePostDto } from 'src/models/dtos/request/create-post.dto';
 import { CommentResponseDto } from 'src/models/dtos/response/comment.response.dto';
+import { DeletedPostResponseDto } from 'src/models/dtos/response/deleted-post.response.dto';
 import { PostListItemResponseDto, PostListResponseDto, PostResponseDto } from 'src/models/dtos/response/post.response.dto';
 import { Board } from 'src/models/tables/board.entity';
 import { Comment } from 'src/models/tables/comment.entity';
 import { Image } from 'src/models/tables/image.entity';
 import { Photo } from 'src/models/tables/photo.entity';
 import { CommunityPost, GalleryPost, Post } from 'src/models/tables/post.entity';
+import { DeletedPost } from 'src/models/tables/deleted-post.entity';
 import { DecodedUserToken, User } from 'src/models/tables/user.entity';
 import { DataSource, In, Repository } from 'typeorm';
 
@@ -25,6 +27,7 @@ export class PostsService {
     @InjectRepository(Photo) private readonly photoRepository: Repository<Photo>,
     @InjectRepository(Image) private readonly imageRepository: Repository<Image>,
     @InjectRepository(User) private readonly userRepository: Repository<User>,
+    @InjectRepository(DeletedPost) private readonly deletedPostRepository: Repository<DeletedPost>,
     private readonly dataSource: DataSource,
   ) { }
 
@@ -125,7 +128,7 @@ export class PostsService {
     return dto;
   }
 
-  async deletePost(user: DecodedUserToken, boardId: number, postId: number): Promise<void> {
+  async deletePost(user: DecodedUserToken, boardId: number, postId: number): Promise<DeletedPostResponseDto> {
     await this.validateBoard(boardId);
 
     const post = await this.postRepository.findOne({
@@ -141,7 +144,23 @@ export class PostsService {
       throw new BadRequestException(createError(ErrorCode.NO_PERMISSION_TO_EDIT));
     }
 
-    await this.postRepository.softRemove(post);
+    const deletedPost = new DeletedPost();
+    deletedPost.originalPostId = post.id;
+    deletedPost.boardId = boardId;
+    deletedPost.authorId = post.author.id;
+    deletedPost.title = post.title;
+    deletedPost.content = post.content;
+    deletedPost.type = (post as any).type ?? 'unknown';
+    deletedPost.views = post.views;
+    deletedPost.originalCreatedAt = post.createdAt as Date;
+
+    const saved = await this.dataSource.transaction(async (manager) => {
+      const result = await manager.save(DeletedPost, deletedPost);
+      await manager.remove(Post, post);
+      return result;
+    });
+
+    return plainToInstance(DeletedPostResponseDto, saved, { excludeExtraneousValues: true });
   }
 
   async toggleLike(user: DecodedUserToken, boardId: number, postId: number): Promise<{ liked: boolean }> {
@@ -218,5 +237,12 @@ export class PostsService {
     }
 
     await this.commentRepository.softRemove(comment);
+  }
+
+  async getDeletedPosts(boardId: number): Promise<DeletedPost[]> {
+    return await this.deletedPostRepository.find({
+      where: { boardId },
+      order: { deletedAt: 'DESC' },
+    });
   }
 }

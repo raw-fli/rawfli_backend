@@ -14,6 +14,7 @@ import { UserDecorator } from 'src/common/decorators/user.decorator';
 import { CreateCommentDto } from 'src/models/dtos/request/create-comment.dto';
 import { CreatePostDto } from 'src/models/dtos/request/create-post.dto';
 import { CommentResponseDto } from 'src/models/dtos/response/comment.response.dto';
+import { DeletedPostResponseDto } from 'src/models/dtos/response/deleted-post.response.dto';
 import { PostListResponseDto, PostResponseDto } from 'src/models/dtos/response/post.response.dto';
 import { DecodedUserToken } from 'src/models/tables/user.entity';
 import { PostsService } from 'src/providers/posts.service';
@@ -63,9 +64,9 @@ export class PostsController {
     @UserDecorator() user: DecodedUserToken,
     @Param('boardId', ParseIntPipe) boardId: number,
     @Param('postId', ParseIntPipe) postId: number,
-  ): Promise<Try<null>> {
-    await this.postsService.deletePost(user, boardId, postId);
-    return createResponseForm(null);
+  ): Promise<Try<DeletedPostResponseDto>> {
+    const deleted = await this.postsService.deletePost(user, boardId, postId);
+    return createResponseForm(deleted);
   }
 
   @UseGuards(JwtGuard)
@@ -99,5 +100,14 @@ export class PostsController {
   ): Promise<Try<null>> {
     await this.postsService.deleteComment(user, commentId);
     return createResponseForm(null);
+  }
+
+  // TODO: temporary
+  @Get('deleted/all')
+  async getDeletedPosts(
+    @Param('boardId', ParseIntPipe) boardId: number,
+  ): Promise<Try<any[]>> {
+    const posts = await this.postsService.getDeletedPosts(boardId);
+    return createResponseForm(posts);
   }
 }
