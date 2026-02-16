@@ -1,11 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { createError, ErrorCode } from 'src/common/exception/error';
 import { CreateUserDto } from 'src/models/dtos/request/create-user.dto';
 import { DecodedUserToken, User } from 'src/models/tables/user.entity';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import { RpcException } from '@nestjs/microservices';
 
 @Injectable()
 export class UsersService {
@@ -21,7 +20,7 @@ export class UsersService {
     });
 
     if (alreadyCreatedEmail) {
-      throw new RpcException(createError(ErrorCode.EMAIL_ALREADY_CREATED));
+      throw new ConflictException(createError(ErrorCode.EMAIL_ALREADY_CREATED));
     }
 
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
