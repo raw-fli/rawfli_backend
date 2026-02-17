@@ -8,7 +8,7 @@ import {
   PrimaryColumn,
 } from 'typeorm';
 import { v7 as uuidv7 } from 'uuid';
-import { CommunityPost, GalleryPost } from './post.entity';
+import { GalleryPost } from './post.entity';
 import { User } from 'src/domain/user/entity/user.entity';
 import { Image } from 'src/domain/aws/entity/image.entity';
 
@@ -42,6 +42,6 @@ export class Photo {
   @ManyToMany(() => User, (user) => user.likedPhotos)
   likes!: User[];
 
-  @ManyToMany(() => CommunityPost, (post) => post.referencedPhotos)
-  referencedInPosts!: CommunityPost[];
+  @ManyToMany('Article', 'referencedPhotos')
+  referencedInArticles!: any[];
 }

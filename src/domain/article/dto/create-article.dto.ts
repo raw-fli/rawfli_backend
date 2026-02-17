@@ -1,6 +1,6 @@
 import { IsArray, IsOptional, IsString } from 'class-validator';
 
-export class CreatePostDto {
+export class CreateArticleDto {
   @IsString({ message: '제목을 입력해주세요.' })
   title: string;
 
@@ -10,10 +10,10 @@ export class CreatePostDto {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  imageIds?: string[];
+  referencedPhotoIds?: string[];
 
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  photoDescriptions?: string[];
+  imageIds?: string[];
 }

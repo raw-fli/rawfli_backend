@@ -8,6 +8,7 @@ export enum ErrorCode {
   ARTICLE_ALREADY_REPORTED = 4014,
   NO_PERMISSION_TO_EDIT = 4015,
   COMMENT_NOT_FOUND = 4016,
+  BOARD_TYPE_MISMATCH = 4017,
 }
 
 export const ErrorMessage: Record<ErrorCode, string> = {
@@ -20,6 +21,7 @@ export const ErrorMessage: Record<ErrorCode, string> = {
   [ErrorCode.ARTICLE_ALREADY_REPORTED]: '이미 신고한 게시글이에요.',
   [ErrorCode.NO_PERMISSION_TO_EDIT]: '이 게시글의 작성자만이 수정할 수 있어요.',
   [ErrorCode.COMMENT_NOT_FOUND]: '댓글을 찾지 못했어요.',
+  [ErrorCode.BOARD_TYPE_MISMATCH]: '이 게시판에서 지원하지 않는 요청이에요.',
 };
 
 export function createError(code: ErrorCode) {

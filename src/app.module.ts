@@ -12,12 +12,14 @@ import { AwsModule } from './domain/aws/aws.module';
 import { BoardsModule } from './domain/board/board.module';
 import { PostsModule } from './domain/post/post.module';
 import { User } from './domain/user/entity/user.entity';
-import { Post, CommunityPost, GalleryPost } from './domain/post/entity/post.entity';
+import { Post, GalleryPost } from './domain/post/entity/post.entity';
 import { Comment } from './domain/post/entity/comment.entity';
 import { Photo } from './domain/post/entity/photo.entity';
 import { Image } from './domain/aws/entity/image.entity';
 import { Board } from './domain/board/entity/board.entity';
 import { DeletedPost } from './domain/post/entity/deleted-post.entity';
+import { Article } from './domain/article/entity/article.entity';
+import { ArticleModule } from './domain/article/article.module';
 
 @Module({
   imports: [
@@ -35,7 +37,7 @@ import { DeletedPost } from './domain/post/entity/deleted-post.entity';
         username: configService.get('POSTGRES_USER'),
         password: configService.get('POSTGRES_PASSWORD'),
         database: configService.get('POSTGRES_DATABASE'),
-        entities: [User, Post, CommunityPost, GalleryPost, Comment, Photo, Image, Board, DeletedPost],
+        entities: [User, Post, Article, GalleryPost, Comment, Photo, Image, Board, DeletedPost],
         synchronize: true,
         // extra: {
         //   ssl: true,
@@ -47,6 +49,7 @@ import { DeletedPost } from './domain/post/entity/deleted-post.entity';
     AwsModule,
     BoardsModule,
     PostsModule,
+    ArticleModule,
   ],
   controllers: [],
   providers: [

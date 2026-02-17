@@ -2,25 +2,28 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { createError, ErrorCode } from 'src/common/exception/error';
+import { Article } from 'src/domain/article/entity/article.entity';
+import { CreateArticleDto } from 'src/domain/article/dto/create-article.dto';
+import {
+  ArticleListItemResponseDto,
+  ArticleListResponseDto,
+  ArticleResponseDto,
+} from 'src/domain/article/dto/article.response.dto';
 import { CreateCommentDto } from 'src/domain/post/dto/create-comment.dto';
-import { CreatePostDto } from 'src/domain/post/dto/create-post.dto';
 import { CommentResponseDto } from 'src/domain/post/dto/comment.response.dto';
 import { DeletedPostResponseDto } from 'src/domain/post/dto/deleted-post.response.dto';
-import { PostListItemResponseDto, PostListResponseDto, PostResponseDto } from 'src/domain/post/dto/post.response.dto';
 import { Board } from 'src/domain/board/entity/board.entity';
 import { Comment } from 'src/domain/post/entity/comment.entity';
 import { Image } from 'src/domain/aws/entity/image.entity';
 import { Photo } from 'src/domain/post/entity/photo.entity';
-import { GalleryPost, Post } from 'src/domain/post/entity/post.entity';
 import { DeletedPost } from 'src/domain/post/entity/deleted-post.entity';
 import { DecodedUserToken, User } from 'src/domain/user/entity/user.entity';
 import { DataSource, In, Repository } from 'typeorm';
 
 @Injectable()
-export class PostsService {
+export class ArticleService {
   constructor(
-    @InjectRepository(Post) private readonly postRepository: Repository<Post>,
-    @InjectRepository(GalleryPost) private readonly galleryPostRepository: Repository<GalleryPost>,
+    @InjectRepository(Article) private readonly articleRepository: Repository<Article>,
     @InjectRepository(Board) private readonly boardRepository: Repository<Board>,
     @InjectRepository(Comment) private readonly commentRepository: Repository<Comment>,
     @InjectRepository(Photo) private readonly photoRepository: Repository<Photo>,
@@ -30,53 +33,50 @@ export class PostsService {
     private readonly dataSource: DataSource,
   ) { }
 
-  private async validateGalleryBoard(boardId: number): Promise<Board> {
+  private async validateCommunityBoard(boardId: number): Promise<Board> {
     const board = await this.boardRepository.findOne({ where: { id: boardId } });
     if (!board) {
       throw new NotFoundException(createError(ErrorCode.BOARD_NOT_FOUND));
     }
-    if (board.type !== 'gallery') {
+    if (board.type !== 'community') {
       throw new BadRequestException(createError(ErrorCode.BOARD_TYPE_MISMATCH));
     }
     return board;
   }
 
-  async createPost(user: DecodedUserToken, boardId: number, dto: CreatePostDto): Promise<PostResponseDto> {
-    const board = await this.validateGalleryBoard(boardId);
+  async createArticle(user: DecodedUserToken, boardId: number, dto: CreateArticleDto): Promise<ArticleResponseDto> {
+    const board = await this.validateCommunityBoard(boardId);
 
     return await this.dataSource.transaction(async (manager) => {
       board.maxPostId += 1;
       await manager.save(Board, board);
 
-      const post = new GalleryPost();
-      post.id = board.maxPostId;
-      post.board = board;
-      post.author = { id: user.id } as User;
-      post.title = dto.title;
-      post.content = dto.content;
-      const savedPost = await manager.save(GalleryPost, post);
+      const article = new Article();
+      article.id = board.maxPostId;
+      article.board = board;
+      article.author = { id: user.id } as User;
+      article.title = dto.title;
+      article.content = dto.content;
+
+      if (dto.referencedPhotoIds && dto.referencedPhotoIds.length > 0) {
+        const photos = await manager.findBy(Photo, { id: In(dto.referencedPhotoIds) });
+        article.referencedPhotos = photos;
+      }
 
       if (dto.imageIds && dto.imageIds.length > 0) {
         const images = await manager.findBy(Image, { id: In(dto.imageIds) });
-        const photos = dto.imageIds.map((imageId, index) => {
-          const photo = new Photo();
-          photo.image = images.find((img) => img.id === imageId)!;
-          photo.post = savedPost;
-          photo.author = { id: user.id } as User;
-          photo.description = dto.photoDescriptions?.[index] ?? undefined;
-          return photo;
-        });
-        await manager.save(Photo, photos);
+        article.attachedImages = images;
       }
 
-      return plainToInstance(PostResponseDto, savedPost, { excludeExtraneousValues: true });
+      const saved = await manager.save(Article, article);
+      return plainToInstance(ArticleResponseDto, saved, { excludeExtraneousValues: true });
     });
   }
 
-  async getPosts(boardId: number, page: number = 1, limit: number = 20): Promise<PostListResponseDto> {
-    await this.validateGalleryBoard(boardId);
+  async getArticles(boardId: number, page: number = 1, limit: number = 20): Promise<ArticleListResponseDto> {
+    await this.validateCommunityBoard(boardId);
 
-    const [posts, total] = await this.postRepository.findAndCount({
+    const [articles, total] = await this.articleRepository.findAndCount({
       where: { board: boardId as any },
       relations: ['author', 'comments'],
       order: { createdAt: 'DESC' },
@@ -84,118 +84,125 @@ export class PostsService {
       take: limit,
     });
 
-    const items = posts.map((post) => {
-      const dto = plainToInstance(PostListItemResponseDto, post, { excludeExtraneousValues: true });
-      dto.commentCount = post.comments?.length ?? 0;
+    const items = articles.map((article) => {
+      const dto = plainToInstance(ArticleListItemResponseDto, article, { excludeExtraneousValues: true });
+      dto.commentCount = article.comments?.length ?? 0;
       return dto;
     });
 
-    return plainToInstance(PostListResponseDto, { posts: items, total }, { excludeExtraneousValues: true });
+    return plainToInstance(ArticleListResponseDto, { articles: items, total }, { excludeExtraneousValues: true });
   }
 
-  async getPost(boardId: number, postId: number): Promise<PostResponseDto> {
-    await this.validateGalleryBoard(boardId);
+  async getArticle(boardId: number, articleId: number): Promise<ArticleResponseDto> {
+    await this.validateCommunityBoard(boardId);
 
-    const post = await this.postRepository.findOne({
-      where: { id: postId, board: boardId as any },
-      relations: ['author', 'comments', 'comments.parent', 'comments.author', 'comments.replies', 'comments.replies.author', 'likes'],
+    const article = await this.articleRepository.findOne({
+      where: { id: articleId, board: boardId as any },
+      relations: [
+        'author',
+        'comments', 'comments.parent', 'comments.author',
+        'comments.replies', 'comments.replies.author',
+        'likes',
+        'referencedPhotos', 'referencedPhotos.image',
+        'attachedImages',
+      ],
     });
 
-    if (!post) {
+    if (!article) {
       throw new NotFoundException(createError(ErrorCode.ARTICLE_NOT_FOUND));
     }
 
-    post.views += 1;
-    await this.postRepository.save(post);
+    article.views += 1;
+    await this.articleRepository.save(article);
 
-    post.comments = post.comments?.filter((c) => !c.parent) ?? [];
+    article.comments = article.comments?.filter((c) => !c.parent) ?? [];
 
-    const dto = plainToInstance(PostResponseDto, post, { excludeExtraneousValues: true });
-    dto.likesCount = post.likes?.length ?? 0;
+    const dto = plainToInstance(ArticleResponseDto, article, { excludeExtraneousValues: true });
+    dto.likesCount = article.likes?.length ?? 0;
     return dto;
   }
 
-  async deletePost(user: DecodedUserToken, boardId: number, postId: number): Promise<DeletedPostResponseDto> {
-    await this.validateGalleryBoard(boardId);
+  async deleteArticle(user: DecodedUserToken, boardId: number, articleId: number): Promise<DeletedPostResponseDto> {
+    await this.validateCommunityBoard(boardId);
 
-    const post = await this.postRepository.findOne({
-      where: { id: postId, board: boardId as any },
+    const article = await this.articleRepository.findOne({
+      where: { id: articleId, board: boardId as any },
       relations: ['author'],
     });
 
-    if (!post) {
+    if (!article) {
       throw new NotFoundException(createError(ErrorCode.ARTICLE_NOT_FOUND));
     }
 
-    if (post.author.id !== user.id) {
+    if (article.author.id !== user.id) {
       throw new BadRequestException(createError(ErrorCode.NO_PERMISSION_TO_EDIT));
     }
 
     const deletedPost = new DeletedPost();
-    deletedPost.originalPostId = post.id;
+    deletedPost.originalPostId = article.id;
     deletedPost.boardId = boardId;
-    deletedPost.authorId = post.author.id;
-    deletedPost.title = post.title;
-    deletedPost.content = post.content;
-    deletedPost.type = (post as any).type ?? 'unknown';
-    deletedPost.views = post.views;
-    deletedPost.originalCreatedAt = post.createdAt as Date;
+    deletedPost.authorId = article.author.id;
+    deletedPost.title = article.title;
+    deletedPost.content = article.content;
+    deletedPost.type = 'community';
+    deletedPost.views = article.views;
+    deletedPost.originalCreatedAt = article.createdAt as Date;
 
     const saved = await this.dataSource.transaction(async (manager) => {
       const result = await manager.save(DeletedPost, deletedPost);
-      await manager.remove(Post, post);
+      await manager.remove(Article, article);
       return result;
     });
 
     return plainToInstance(DeletedPostResponseDto, saved, { excludeExtraneousValues: true });
   }
 
-  async toggleLike(user: DecodedUserToken, boardId: number, postId: number): Promise<{ liked: boolean }> {
-    await this.validateGalleryBoard(boardId);
+  async toggleLike(user: DecodedUserToken, boardId: number, articleId: number): Promise<{ liked: boolean }> {
+    await this.validateCommunityBoard(boardId);
 
-    const post = await this.postRepository.findOne({
-      where: { id: postId, board: boardId as any },
+    const article = await this.articleRepository.findOne({
+      where: { id: articleId, board: boardId as any },
       relations: ['likes'],
     });
 
-    if (!post) {
+    if (!article) {
       throw new NotFoundException(createError(ErrorCode.ARTICLE_NOT_FOUND));
     }
 
-    const alreadyLiked = post.likes.some((u) => u.id === user.id);
+    const alreadyLiked = article.likes.some((u) => u.id === user.id);
 
     if (alreadyLiked) {
-      post.likes = post.likes.filter((u) => u.id !== user.id);
+      article.likes = article.likes.filter((u) => u.id !== user.id);
     } else {
       const userEntity = await this.userRepository.findOne({ where: { id: user.id } });
       if (userEntity) {
-        post.likes.push(userEntity);
+        article.likes.push(userEntity);
       }
     }
 
-    await this.postRepository.save(post);
+    await this.articleRepository.save(article);
     return { liked: !alreadyLiked };
   }
 
-  async createComment(user: DecodedUserToken, boardId: number, postId: number, dto: CreateCommentDto): Promise<CommentResponseDto> {
-    await this.validateGalleryBoard(boardId);
+  async createComment(user: DecodedUserToken, boardId: number, articleId: number, dto: CreateCommentDto): Promise<CommentResponseDto> {
+    await this.validateCommunityBoard(boardId);
 
-    const post = await this.postRepository.findOne({
-      where: { id: postId, board: boardId as any },
+    const article = await this.articleRepository.findOne({
+      where: { id: articleId, board: boardId as any },
     });
 
-    if (!post) {
+    if (!article) {
       throw new NotFoundException(createError(ErrorCode.ARTICLE_TO_COMMENT_NOT_FOUND));
     }
 
     const comment = new Comment();
-    comment.post = post;
+    comment.post = article;
     comment.author = { id: user.id } as User;
     comment.content = dto.content;
 
     if (dto.parentId) {
       const parentComment = await this.commentRepository.findOne({
-        where: { id: dto.parentId, post: { id: postId, board: boardId as any } },
+        where: { id: dto.parentId, post: { id: articleId, board: boardId as any } },
       });
 
       if (!parentComment) {
@@ -224,12 +231,5 @@ export class PostsService {
     }
 
     await this.commentRepository.softRemove(comment);
-  }
-
-  async getDeletedPosts(boardId: number): Promise<DeletedPost[]> {
-    return await this.deletedPostRepository.find({
-      where: { boardId },
-      order: { deletedAt: 'DESC' },
-    });
   }
 }

@@ -2,7 +2,6 @@ import {
   Column,
   ChildEntity,
   Entity,
-  JoinTable,
   ManyToMany,
   ManyToOne,
   OneToMany,
@@ -44,13 +43,6 @@ export class Post extends TimeColumns {
 
   @OneToMany(() => Comment, (comment) => comment.post)
   comments!: Comment[];
-}
-
-@ChildEntity('community')
-export class CommunityPost extends Post {
-  @ManyToMany(() => Photo, (photo) => photo.referencedInPosts)
-  @JoinTable()
-  referencedPhotos!: Photo[];
 }
 
 @ChildEntity('gallery')
