@@ -1,5 +1,5 @@
 import { createParamDecorator, ExecutionContext } from "@nestjs/common";
-import { DecodedUserToken } from "src/models/tables/user.entity";
+import { DecodedUserToken } from "src/domain/user/entity/user.entity";
 
 export const UserDecorator = createParamDecorator((data: string, ctx: ExecutionContext) => {
   const request = ctx.switchToHttp().getRequest();

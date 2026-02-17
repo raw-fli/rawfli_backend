@@ -3,7 +3,7 @@ declare const module: any;
 import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { BadRequestException, ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
-import { HttpExceptionFilter } from './auth/common/filters/http-exception.filter';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import * as compression from 'compression';
 import { ValidationError } from 'class-validator';
 import { extractConstraints } from './common/utils/utils';

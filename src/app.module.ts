@@ -1,23 +1,23 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UsersModule } from './modules/users.module';
-import { AuthModule } from './auth/auth.module';
+import { UsersModule } from './domain/user/user.module';
+import { AuthModule } from './domain/auth/auth.module';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
-import { HttpExceptionFilter } from './auth/common/filters/http-exception.filter';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { CacheModule } from '@nestjs/cache-manager';
 import { LoggerMiddleware } from './common/middlewares/logger.middlewares';
-import { AwsModule } from './modules/aws.module';
-import { BoardsModule } from './modules/boards.module';
-import { PostsModule } from './modules/posts.module';
-import { User } from './models/tables/user.entity';
-import { Post, CommunityPost, GalleryPost } from './models/tables/post.entity';
-import { Comment } from './models/tables/comment.entity';
-import { Photo } from './models/tables/photo.entity';
-import { Image } from './models/tables/image.entity';
-import { Board } from './models/tables/board.entity';
-import { DeletedPost } from './models/tables/deleted-post.entity';
+import { AwsModule } from './domain/aws/aws.module';
+import { BoardsModule } from './domain/board/board.module';
+import { PostsModule } from './domain/post/post.module';
+import { User } from './domain/user/entity/user.entity';
+import { Post, CommunityPost, GalleryPost } from './domain/post/entity/post.entity';
+import { Comment } from './domain/post/entity/comment.entity';
+import { Photo } from './domain/post/entity/photo.entity';
+import { Image } from './domain/aws/entity/image.entity';
+import { Board } from './domain/board/entity/board.entity';
+import { DeletedPost } from './domain/post/entity/deleted-post.entity';
 
 @Module({
   imports: [
