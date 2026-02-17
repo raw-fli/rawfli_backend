@@ -1,6 +1,7 @@
 export enum ErrorCode {
   EMAIL_ALREADY_CREATED = 4001,
   NO_AUTH_TOKEN = 4002,
+  INVALID_CREDENTIALS = 4003,
   BOARD_NOT_FOUND = 4004,
   ARTICLE_NOT_FOUND = 4005,
   ARTICLE_TO_COMMENT_NOT_FOUND = 4006,
@@ -14,6 +15,7 @@ export enum ErrorCode {
 export const ErrorMessage: Record<ErrorCode, string> = {
   [ErrorCode.EMAIL_ALREADY_CREATED]: '이미 생성된 이메일입니다.',
   [ErrorCode.NO_AUTH_TOKEN]: '인증이 필요합니다.',
+  [ErrorCode.INVALID_CREDENTIALS]: '이메일 또는 비밀번호가 올바르지 않습니다.',
   [ErrorCode.BOARD_NOT_FOUND]: '게시판을 찾지 못했어요.',
   [ErrorCode.ARTICLE_NOT_FOUND]: '게시글을 찾지 못했어요.',
   [ErrorCode.ARTICLE_TO_COMMENT_NOT_FOUND]: '댓글을 작성할 게시글을 찾지 못했어요.',
