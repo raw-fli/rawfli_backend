@@ -210,7 +210,7 @@ export class PostsService {
 
     if (dto.parentId) {
       const parentComment = await this.commentRepository.findOne({
-        where: { id: dto.parentId },
+        where: { id: dto.parentId, post: { id: postId, board: boardId as any } },
       });
 
       if (!parentComment) {
