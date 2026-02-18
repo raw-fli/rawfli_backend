@@ -1,4 +1,4 @@
-import { Controller, Post, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
+import { Controller, Get, Post, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { ApiConsumes } from "@nestjs/swagger";
 import { JwtGuard } from "src/domain/auth/guards/jwt.guard";
@@ -11,6 +11,13 @@ import { createResponseForm, Try } from "src/common/types";
 @Controller('api/v1/aws')
 export class AwsController {
   constructor(private readonly awsService: AwsService) { }
+
+  // TODO: temporary
+  @Get('images')
+  async getImages(): Promise<Try<Image[]>> {
+    const images = await this.awsService.getImages();
+    return createResponseForm(images);
+  }
 
   @UseGuards(JwtGuard)
   @ApiConsumes('multipart/form-data')

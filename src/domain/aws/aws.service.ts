@@ -23,6 +23,13 @@ export class AwsService {
     });
   }
 
+  async getImages() {
+    return await this.imageRepository.find({
+      relations: ['uploader'],
+      order: { createdAt: 'DESC' },
+    });
+  }
+
   async uploadImage(user: DecodedUserToken, file: Express.Multer.File) {
     const originalName = Buffer.from(file.originalname, 'latin1').toString('utf8');
     const key = `${Date.now()}-${originalName}`;
