@@ -98,7 +98,7 @@ export class PostsService {
 
     const post = await this.postRepository.findOne({
       where: { id: postId, board: boardId as any },
-      relations: ['author', 'comments', 'comments.parent', 'comments.author', 'comments.replies', 'comments.replies.author', 'likes'],
+      relations: ['author', 'comments', 'comments.author', 'comments.parent', 'likes'],
     });
 
     if (!post) {
@@ -108,7 +108,25 @@ export class PostsService {
     post.views += 1;
     await this.postRepository.save(post);
 
-    post.comments = post.comments?.filter((c) => !c.parent) ?? [];
+    const commentMap = new Map<number, Comment>();
+    for (const comment of post.comments ?? []) {
+      comment.replies = [];
+      commentMap.set(comment.id, comment);
+    }
+
+    const rootComments: Comment[] = [];
+    for (const comment of post.comments ?? []) {
+      if (comment.parent) {
+        const parent = commentMap.get(comment.parent.id);
+        if (parent) {
+          parent.replies.push(comment);
+        }
+      } else {
+        rootComments.push(comment);
+      }
+    }
+
+    post.comments = rootComments;
 
     const dto = plainToInstance(PostResponseDto, post, { excludeExtraneousValues: true });
     dto.likesCount = post.likes?.length ?? 0;
