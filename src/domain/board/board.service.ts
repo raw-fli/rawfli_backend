@@ -35,6 +35,14 @@ export class BoardsService implements OnModuleInit {
     return plainToInstance(BoardResponseDto, boards, { excludeExtraneousValues: true });
   }
 
+  async getBoard(boardId: number): Promise<BoardResponseDto> {
+    const board = await this.boardRepository.findOne({ where: { id: boardId } });
+    if (!board) {
+      throw new NotFoundException(createError(ErrorCode.BOARD_NOT_FOUND));
+    }
+    return plainToInstance(BoardResponseDto, board, { excludeExtraneousValues: true });
+  }
+
   private buildSearchCondition(searchIn: SearchIn): string {
     if (searchIn === SearchIn.TITLE) {
       return 'post.title ILIKE :keyword';

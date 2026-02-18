@@ -29,6 +29,14 @@ export class BoardsController {
     return createResponseForm(result);
   }
 
+  @Get(':boardId')
+  async getBoard(
+    @Param('boardId', ParseIntPipe) boardId: number,
+  ): Promise<Try<BoardResponseDto>> {
+    const board = await this.boardsService.getBoard(boardId);
+    return createResponseForm(board);
+  }
+
   @Get(':boardId/search')
   async searchInBoard(
     @Param('boardId', ParseIntPipe) boardId: number,
