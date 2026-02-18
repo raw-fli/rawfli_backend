@@ -82,6 +82,9 @@ export class ArticleListItemResponseDto {
   commentCount: number;
 
   @Expose()
+  likesCount: number;
+
+  @Expose()
   thumbnailKey: string | null;
 
   @Expose()
