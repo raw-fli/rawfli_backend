@@ -78,7 +78,7 @@ export class ArticleService {
 
     const [articles, total] = await this.articleRepository.findAndCount({
       where: { board: boardId as any },
-      relations: ['author', 'comments'],
+      relations: ['author', 'comments', 'attachedImages', 'referencedPhotos', 'referencedPhotos.image'],
       order: { createdAt: 'DESC' },
       skip: (page - 1) * limit,
       take: limit,
@@ -87,6 +87,10 @@ export class ArticleService {
     const items = articles.map((article) => {
       const dto = plainToInstance(ArticleListItemResponseDto, article, { excludeExtraneousValues: true });
       dto.commentCount = article.comments?.length ?? 0;
+      dto.thumbnailKey =
+        article.attachedImages?.[0]?.key
+        ?? article.referencedPhotos?.[0]?.image?.key
+        ?? null;
       return dto;
     });
 

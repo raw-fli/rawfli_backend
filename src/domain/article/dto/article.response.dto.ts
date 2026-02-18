@@ -82,6 +82,9 @@ export class ArticleListItemResponseDto {
   commentCount: number;
 
   @Expose()
+  thumbnailKey: string | null;
+
+  @Expose()
   createdAt: Date;
 
   constructor(partial: Partial<ArticleListItemResponseDto>) {
