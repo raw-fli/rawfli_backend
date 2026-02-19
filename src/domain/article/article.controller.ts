@@ -38,6 +38,21 @@ export class ArticleController {
     return createResponseForm(result);
   }
 
+  @Get('popular')
+  async getPopularArticles(
+    @Param('boardId', ParseIntPipe) boardId: number,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ): Promise<Try<ArticleListResponseDto>> {
+    const result = await this.articleService.getPopularArticles(
+      boardId,
+      page ? parseInt(page, 10) : 1,
+      limit ? parseInt(limit, 10) : 20,
+    );
+    return createResponseForm(result);
+  }
+
+
   @UseGuards(JwtGuard)
   @Post()
   async createArticle(

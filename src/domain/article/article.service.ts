@@ -98,6 +98,65 @@ export class ArticleService {
     return plainToInstance(ArticleListResponseDto, { articles: items, total }, { excludeExtraneousValues: true });
   }
 
+  async getPopularArticles(boardId: number, page: number = 1, limit: number = 20): Promise<ArticleListResponseDto> {
+    await this.validateCommunityBoard(boardId);
+
+    /**
+     * Score = (likes * 2 + comments + sqrt(views)) / (age_hours + 2)^gravity
+     */
+    const GRAVITY = 1.8;
+    const hnScore = `(
+      (SELECT COUNT(*) FROM users_liked_posts ulp WHERE ulp."postId" = article.id) * 2.0
+      + (SELECT COUNT(*) FROM comment c WHERE c."postId" = article.id AND c."deletedAt" IS NULL)
+      + SQRT(GREATEST(article.views, 1))
+    ) / POW(
+      EXTRACT(EPOCH FROM (NOW() - article."createdAt")) / 3600.0 + 2.0,
+      ${GRAVITY}
+    )`;
+
+    const total = await this.articleRepository.count({ where: { board: boardId as any } });
+
+    const ranked = await this.articleRepository
+      .createQueryBuilder('article')
+      .select(['article.id', 'article.board'])
+      .where('article.board = :boardId', { boardId })
+      .orderBy(hnScore, 'DESC')
+      .skip((page - 1) * limit)
+      .take(limit)
+      .getRawMany<{ article_id: number }>();
+
+    const articleIds = ranked.map((r) => r.article_id);
+
+    let articles: Article[] = [];
+    if (articleIds.length > 0) {
+      const articlesMap = await this.articleRepository
+        .createQueryBuilder('article')
+        .leftJoinAndSelect('article.author', 'author')
+        .leftJoinAndSelect('article.comments', 'comments')
+        .leftJoinAndSelect('article.likes', 'likes')
+        .leftJoinAndSelect('article.attachedImages', 'attachedImages')
+        .leftJoinAndSelect('article.referencedPhotos', 'referencedPhotos')
+        .where('article.board = :boardId AND article.id IN (:...ids)', { boardId, ids: articleIds })
+        .getMany();
+
+      const byId = new Map(articlesMap.map((a) => [a.id, a]));
+      articles = articleIds.map((id) => byId.get(id)).filter((a): a is Article => !!a);
+    }
+
+    const items = articles.map((article) => {
+      const dto = plainToInstance(ArticleListItemResponseDto, article, { excludeExtraneousValues: true });
+      dto.commentCount = article.comments?.length ?? 0;
+      dto.likesCount = article.likes?.length ?? 0;
+      dto.thumbnailKey =
+        article.attachedImages?.[0]?.key
+        ?? article.referencedPhotos?.[0]?.image?.key
+        ?? null;
+      return dto;
+    });
+
+    return plainToInstance(ArticleListResponseDto, { articles: items, total }, { excludeExtraneousValues: true });
+  }
+
   async getArticle(boardId: number, articleId: number): Promise<ArticleResponseDto> {
     await this.validateCommunityBoard(boardId);
 
