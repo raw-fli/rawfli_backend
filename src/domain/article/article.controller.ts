@@ -19,6 +19,9 @@ import { ArticleListResponseDto, ArticleResponseDto } from 'src/domain/article/d
 import { DecodedUserToken } from 'src/domain/user/entity/user.entity';
 import { ArticleService } from 'src/domain/article/article.service';
 import { createResponseForm, Try } from 'src/common/types';
+import { ArticleQueryDto } from './dto/article-query.dto';
+import { LikeArticleResponseDto } from './dto/like-article.response.dto';
+import { DeletedArticleResponseDto } from './dto/deleted-article.response.dto';
 
 @ApiTags('articles')
 @Controller('api/v1/boards/:boardId/articles')
@@ -30,13 +33,12 @@ export class ArticleController {
   @Get()
   async getArticles(
     @Param('boardId', ParseIntPipe) boardId: number,
-    @Query('page') page?: string,
-    @Query('limit') limit?: string,
+    @Query() query: ArticleQueryDto,
   ): Promise<Try<ArticleListResponseDto>> {
     const result = await this.articleService.getArticles(
       boardId,
-      page ? parseInt(page, 10) : 1,
-      limit ? parseInt(limit, 10) : 20,
+      query.page,
+      query.limit,
     );
     return createResponseForm(result);
   }
@@ -46,13 +48,12 @@ export class ArticleController {
   @Get('popular')
   async getPopularArticles(
     @Param('boardId', ParseIntPipe) boardId: number,
-    @Query('page') page?: string,
-    @Query('limit') limit?: string,
+    @Query() query: ArticleQueryDto,
   ): Promise<Try<ArticleListResponseDto>> {
     const result = await this.articleService.getPopularArticles(
       boardId,
-      page ? parseInt(page, 10) : 1,
-      limit ? parseInt(limit, 10) : 20,
+      query.page,
+      query.limit,
     );
     return createResponseForm(result);
   }
@@ -85,27 +86,28 @@ export class ArticleController {
 
   @ApiOperation({ summary: '게시글 삭제' })
   @ApiBearerAuth()
-  @ApiOkResponse({ type: DeletedPostResponseDto })
+  @ApiOkResponse({ type: DeletedArticleResponseDto })
   @UseGuards(JwtGuard)
   @Delete(':articleId')
   async deleteArticle(
     @UserDecorator() user: DecodedUserToken,
     @Param('boardId', ParseIntPipe) boardId: number,
     @Param('articleId', ParseIntPipe) articleId: number,
-  ): Promise<Try<DeletedPostResponseDto>> {
+  ): Promise<Try<DeletedArticleResponseDto>> {
     const deleted = await this.articleService.deleteArticle(user, boardId, articleId);
     return createResponseForm(deleted);
   }
 
   @ApiOperation({ summary: '게시글 좋아요 토글' })
   @ApiBearerAuth()
+  @ApiOkResponse({ type: LikeArticleResponseDto })
   @UseGuards(JwtGuard)
   @Post(':articleId/like')
   async toggleLike(
     @UserDecorator() user: DecodedUserToken,
     @Param('boardId', ParseIntPipe) boardId: number,
     @Param('articleId', ParseIntPipe) articleId: number,
-  ): Promise<Try<{ liked: boolean }>> {
+  ): Promise<Try<LikeArticleResponseDto>> {
     const result = await this.articleService.toggleLike(user, boardId, articleId);
     return createResponseForm(result);
   }

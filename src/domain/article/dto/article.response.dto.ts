@@ -1,6 +1,6 @@
 import { Expose, Type } from 'class-transformer';
 import { UserResponseDto } from 'src/domain/user/dto/user.response.dto';
-import { CommentResponseDto } from 'src/domain/post/dto/comment.response.dto';
+import { CommentResponseDto } from 'src/common/dtos/comment.response.dto';
 
 export class ReferencedPhotoDto {
   @Expose()

@@ -8,6 +8,7 @@ import {
   PrimaryColumn,
   TableInheritance,
   JoinColumn,
+  Relation,
 } from 'typeorm';
 import { Board } from 'src/domain/board/entity/board.entity';
 import { TimeColumns } from 'src/common/entities/time-columns';
@@ -26,8 +27,8 @@ export class Post extends TimeColumns {
   @JoinColumn({ name: 'boardId' })
   board!: Board;
 
-  @ManyToOne(() => User, (user) => user.posts)
-  author!: User;
+  @ManyToOne('User', (user: User) => user.posts)
+  author!: Relation<User>;
 
   @Column('text')
   title!: string;
@@ -35,18 +36,18 @@ export class Post extends TimeColumns {
   @Column('text')
   content!: string;
 
-  @ManyToMany(() => User, (user) => user.likedPosts)
-  likes!: User[];
+  @ManyToMany('User', (user: User) => user.likedPosts)
+  likes!: Relation<User[]>;
 
   @Column({ default: 0 })
   views!: number;
 
-  @OneToMany(() => Comment, (comment) => comment.post)
-  comments!: Comment[];
+  @OneToMany('Comment', (comment: Comment) => comment.post)
+  comments!: Relation<Comment[]>;
 }
 
 @ChildEntity('gallery')
 export class GalleryPost extends Post {
-  @OneToMany(() => Photo, (photo) => photo.post)
-  photos!: Photo[];
+  @OneToMany('Photo', (photo: Photo) => photo.post)
+  photos!: Relation<Photo[]>;
 }

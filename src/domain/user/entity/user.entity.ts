@@ -5,6 +5,7 @@ import {
   JoinTable,
   ManyToMany,
   OneToMany,
+  Relation,
 } from 'typeorm';
 import { CommonColumns } from 'src/common/entities/common-columns';
 import { Image } from 'src/domain/aws/entity/image.entity';
@@ -26,37 +27,31 @@ export class User extends CommonColumns {
   @Column({ type: 'text' })
   password!: string;
 
-  @OneToMany(() => Post, (post) => post.author)
-  posts!: Post[];
+  @OneToMany('Post', (post: Post) => post.author)
+  posts!: Relation<Post[]>;
 
-  @OneToMany(() => Comment, (comment) => comment.author)
-  comments!: Comment[];
+  @OneToMany('Comment', (comment: Comment) => comment.author)
+  comments!: Relation<Comment[]>;
 
   @OneToMany(() => Image, (image) => image.uploader)
   images!: Image[];
 
-  @OneToMany(() => Photo, (photo) => photo.author)
-  photos!: Photo[];
+  @OneToMany('Photo', (photo: Photo) => photo.author)
+  photos!: Relation<Photo[]>;
 
-  @ManyToMany(() => Post, (post) => post.likes)
+  @ManyToMany('Post', (post: Post) => post.likes)
   @JoinTable({ name: 'users_liked_posts' })
-  likedPosts!: Post[];
+  likedPosts!: Relation<Post[]>;
 
-  @ManyToMany(() => Photo, (photo) => photo.likes)
+  @ManyToMany('Photo', (photo: Photo) => photo.likes)
   @JoinTable({ name: 'users_liked_photos' })
-  likedPhotos!: Photo[];
+  likedPhotos!: Relation<Photo[]>;
 
   @ManyToMany(() => User)
   @JoinTable({
     name: 'user_blocks',
-    joinColumn: {
-      name: 'userId',
-      referencedColumnName: 'id',
-    },
-    inverseJoinColumn: {
-      name: 'blockedUserId',
-      referencedColumnName: 'id',
-    },
+    joinColumn: { name: 'userId', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'blockedUserId', referencedColumnName: 'id' },
   })
   blockedUsers!: User[];
 }
