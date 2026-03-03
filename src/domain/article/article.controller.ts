@@ -20,7 +20,7 @@ import { DecodedUserToken } from 'src/domain/user/entity/user.entity';
 import { ArticleService } from 'src/domain/article/article.service';
 import { createResponseForm, Try } from 'src/common/types';
 import { ArticleQueryDto } from './dto/article-query.dto';
-import { LikeArticleResponseDto } from './dto/like-article.response.dto';
+import { LikePostResponseDto } from '../../common/dtos/like-article.response.dto';
 import { DeletedArticleResponseDto } from './dto/deleted-article.response.dto';
 import { DeletedCommentResponseDto } from 'src/common/dtos/deleted-comment.response.dto';
 
@@ -101,14 +101,14 @@ export class ArticleController {
 
   @ApiOperation({ summary: '게시글 좋아요 토글' })
   @ApiBearerAuth()
-  @ApiOkResponse({ type: LikeArticleResponseDto })
+  @ApiOkResponse({ type: LikePostResponseDto })
   @UseGuards(JwtGuard)
   @Post(':articleId/like')
   async toggleLike(
     @UserDecorator() user: DecodedUserToken,
     @Param('boardId', ParseIntPipe) boardId: number,
     @Param('articleId', ParseIntPipe) articleId: number,
-  ): Promise<Try<LikeArticleResponseDto>> {
+  ): Promise<Try<LikePostResponseDto>> {
     const result = await this.articleService.toggleLike(user, boardId, articleId);
     return createResponseForm(result);
   }

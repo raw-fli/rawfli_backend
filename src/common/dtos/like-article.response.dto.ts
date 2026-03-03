@@ -1,11 +1,11 @@
 import { Expose } from "class-transformer";
 
 
-export class LikeArticleResponseDto {
+export class LikePostResponseDto {
   @Expose()
   liked: boolean;
 
-  constructor(partial: Partial<LikeArticleResponseDto>) {
+  constructor(partial: Partial<LikePostResponseDto>) {
     Object.assign(this, partial);
   }
 }

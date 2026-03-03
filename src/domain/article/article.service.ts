@@ -305,12 +305,11 @@ export class ArticleService {
     deletedComment.originalCreatedAt = comment.createdAt as Date;
     deletedComment.deletedAt = new Date();
 
-    const saved = await this.dataSource.transaction(async (manager) => {
-      const result = await manager.save(DeletedComment, deletedComment);
+    await this.dataSource.transaction(async (manager) => {
+      await manager.save(DeletedComment, deletedComment);
       await manager.softRemove(comment);
-      return result;
     });
 
-    return plainToInstance(DeletedCommentResponseDto, saved, { excludeExtraneousValues: true });
+    return plainToInstance(DeletedCommentResponseDto, deletedComment, { excludeExtraneousValues: true });
   }
 }

@@ -1,6 +1,6 @@
 import { Controller, Get, Post, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
-import { ApiConsumes } from "@nestjs/swagger";
+import { ApiConsumes, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { JwtGuard } from "src/domain/auth/guards/jwt.guard";
 import { UserDecorator } from "src/common/decorators/user.decorator";
 import { Image } from "src/domain/aws/entity/image.entity";
@@ -8,6 +8,7 @@ import { DecodedUserToken } from "src/domain/user/entity/user.entity";
 import { AwsService } from "src/domain/aws/aws.service";
 import { createResponseForm, Try } from "src/common/types";
 
+@ApiTags('aws')
 @Controller('api/v1/aws')
 export class AwsController {
   constructor(private readonly awsService: AwsService) { }
@@ -19,6 +20,7 @@ export class AwsController {
     return createResponseForm(images);
   }
 
+  @ApiOperation({ summary: '이미지 업로드' })
   @UseGuards(JwtGuard)
   @ApiConsumes('multipart/form-data')
   @Post('upload')
