@@ -1,0 +1,90 @@
+name: Types CD
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  update-types:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: admin
+          POSTGRES_DB: dev
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    env:
+      PORT: 3000
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DATABASE: dev
+      MODE: DEV
+      RUN_MIGRATIONS: true
+      ORIGIN: "*"
+      CREDENTIALS: true
+      DOMAIN: localhost
+
+    steps:
+      - name: Checkout backend
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Start dev server
+        run: |
+          npm run start:dev &
+          for i in $(seq 1 60); do
+            if curl -s http://localhost:3000/api-json > /dev/null 2>&1; then break
+            fi
+            sleep 2
+          done
+
+      - name: Verify Swagger endpoint
+        run: curl -f http://localhost:3000/api-json > /dev/null
+
+      - name: Clone types repository
+        uses: actions/checkout@v4
+        with:
+          repository: rawfli/types
+          path: types
+          token: ${{ secrets.TYPES_REPO_TOKEN }}
+
+      - name: Install types dependencies
+        working-directory: types
+        run: npm ci
+
+      - name: Generate types
+        working-directory: types
+        run: npm run generate
+
+      - name: Commit and push
+        working-directory: types
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "feat: update types"
+            git push
+          fi
