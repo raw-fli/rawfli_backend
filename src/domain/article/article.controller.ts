@@ -22,6 +22,7 @@ import { createResponseForm, Try } from 'src/common/types';
 import { ArticleQueryDto } from './dto/article-query.dto';
 import { LikeArticleResponseDto } from './dto/like-article.response.dto';
 import { DeletedArticleResponseDto } from './dto/deleted-article.response.dto';
+import { DeletedCommentResponseDto } from 'src/common/dtos/deleted-comment.response.dto';
 
 @ApiTags('articles')
 @Controller('api/v1/boards/:boardId/articles')
@@ -129,13 +130,14 @@ export class ArticleController {
 
   @ApiOperation({ summary: '댓글 삭제' })
   @ApiBearerAuth()
+  @ApiOkResponse({ type: DeletedCommentResponseDto })
   @UseGuards(JwtGuard)
   @Delete(':articleId/comments/:commentId')
   async deleteComment(
     @UserDecorator() user: DecodedUserToken,
     @Param('commentId', ParseIntPipe) commentId: number,
-  ): Promise<Try<null>> {
-    await this.articleService.deleteComment(user, commentId);
-    return createResponseForm(null);
+  ): Promise<Try<DeletedCommentResponseDto>> {
+    const deleted = await this.articleService.deleteComment(user, commentId);
+    return createResponseForm(deleted);
   }
 }

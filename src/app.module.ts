@@ -20,6 +20,7 @@ import { Board } from './domain/board/entity/board.entity';
 import { DeletedPost } from './common/entities/deleted-post.entity';
 import { Article } from './domain/article/entity/article.entity';
 import { ArticleModule } from './domain/article/article.module';
+import { DeletedComment } from './common/entities/deleted-comment.entity';
 
 @Module({
   imports: [
@@ -37,7 +38,7 @@ import { ArticleModule } from './domain/article/article.module';
         username: configService.get('POSTGRES_USER'),
         password: configService.get('POSTGRES_PASSWORD'),
         database: configService.get('POSTGRES_DATABASE'),
-        entities: [User, Post, Article, GalleryPost, Comment, Photo, Image, Board, DeletedPost],
+        entities: [User, Post, Article, GalleryPost, Comment, Photo, Image, Board, DeletedPost, DeletedComment],
         synchronize: true,
         // extra: {
         //   ssl: true,

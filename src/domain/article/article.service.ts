@@ -19,6 +19,8 @@ import { DataSource, In, Repository } from 'typeorm';
 import { Photo } from 'src/common/entities/photo.entity';
 import { DeletedPost } from 'src/common/entities/deleted-post.entity';
 import { Comment } from 'src/common/entities/comment.entity';
+import { DeletedComment } from 'src/common/entities/deleted-comment.entity';
+import { DeletedCommentResponseDto } from 'src/common/dtos/deleted-comment.response.dto';
 
 @Injectable()
 export class ArticleService {
@@ -280,10 +282,10 @@ export class ArticleService {
     return plainToInstance(CommentResponseDto, saved, { excludeExtraneousValues: true });
   }
 
-  async deleteComment(user: DecodedUserToken, commentId: number): Promise<void> {
+  async deleteComment(user: DecodedUserToken, commentId: number): Promise<DeletedCommentResponseDto> {
     const comment = await this.commentRepository.findOne({
       where: { id: commentId },
-      relations: ['author'],
+      relations: ['author', 'post', 'post.board'],
     });
 
     if (!comment) {
@@ -294,6 +296,21 @@ export class ArticleService {
       throw new BadRequestException(createError(ErrorCode.NO_PERMISSION_TO_EDIT));
     }
 
-    await this.commentRepository.softRemove(comment);
+    const deletedComment = new DeletedComment();
+    deletedComment.originalCommentId = comment.id;
+    deletedComment.postId = comment.post.id;
+    deletedComment.boardId = comment.post.board.id;
+    deletedComment.authorId = comment.author.id;
+    deletedComment.content = comment.content;
+    deletedComment.originalCreatedAt = comment.createdAt as Date;
+    deletedComment.deletedAt = new Date();
+
+    const saved = await this.dataSource.transaction(async (manager) => {
+      const result = await manager.save(DeletedComment, deletedComment);
+      await manager.softRemove(comment);
+      return result;
+    });
+
+    return plainToInstance(DeletedCommentResponseDto, saved, { excludeExtraneousValues: true });
   }
 }
