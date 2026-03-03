@@ -32,9 +32,12 @@ jobs:
       POSTGRES_DATABASE: dev
       MODE: DEV
       RUN_MIGRATIONS: true
+      SECRET_KEY: "rawfli_test"
       ORIGIN: "*"
       CREDENTIALS: true
       DOMAIN: localhost
+      AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
     steps:
       - name: Checkout backend
