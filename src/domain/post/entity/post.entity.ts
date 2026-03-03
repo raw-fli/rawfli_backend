@@ -12,9 +12,9 @@ import {
 } from 'typeorm';
 import { Board } from 'src/domain/board/entity/board.entity';
 import { TimeColumns } from 'src/common/entities/time-columns';
-import type { User } from 'src/domain/user/entity/user.entity';
-import type { Photo } from 'src/common/entities/photo.entity';
-import type { Comment } from 'src/common/entities/comment.entity';
+import { User } from 'src/domain/user/entity/user.entity';
+import { Photo } from 'src/common/entities/photo.entity';
+import { Comment } from 'src/common/entities/comment.entity';
 
 @Entity()
 @TableInheritance({ column: { type: 'text', name: 'type' } })

@@ -9,9 +9,9 @@ import {
 } from 'typeorm';
 import { CommonColumns } from 'src/common/entities/common-columns';
 import { Image } from 'src/domain/aws/entity/image.entity';
-import type { Comment } from 'src/common/entities/comment.entity';
-import type { Photo } from 'src/common/entities/photo.entity';
-import type { Post } from 'src/domain/post/entity/post.entity';
+import { Comment } from 'src/common/entities/comment.entity';
+import { Photo } from 'src/common/entities/photo.entity';
+import { Post } from 'src/domain/post/entity/post.entity';
 
 export type DecodedUserToken = Pick<User, 'id' | 'email' | 'username'>;
 

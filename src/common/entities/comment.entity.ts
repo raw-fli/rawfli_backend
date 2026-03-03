@@ -1,7 +1,7 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, Relation } from 'typeorm';
 import { CommonColumns } from 'src/common/entities/common-columns';
-import type { Post } from 'src/domain/post/entity/post.entity';
-import type { User } from 'src/domain/user/entity/user.entity';
+import { Post } from 'src/domain/post/entity/post.entity';
+import { User } from 'src/domain/user/entity/user.entity';
 
 @Entity()
 export class Comment extends CommonColumns {

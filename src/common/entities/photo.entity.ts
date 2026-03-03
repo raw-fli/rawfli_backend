@@ -10,8 +10,8 @@ import {
 } from 'typeorm';
 import { v7 as uuidv7 } from 'uuid';
 import { Image } from 'src/domain/aws/entity/image.entity';
-import type { User } from 'src/domain/user/entity/user.entity';
-import type { GalleryPost } from 'src/domain/post/entity/post.entity';
+import { User } from 'src/domain/user/entity/user.entity';
+import { GalleryPost } from 'src/domain/post/entity/post.entity';
 
 @Entity()
 export class Photo {
