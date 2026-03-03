@@ -73,7 +73,7 @@ jobs:
 
       - name: Install types dependencies
         working-directory: types
-        run: npm ci
+        run: npm install
 
       - name: Generate types
         working-directory: types
