@@ -67,7 +67,7 @@ jobs:
       - name: Clone types repository
         uses: actions/checkout@v4
         with:
-          repository: https://github.com/raw-fli/types.git
+          repository: raw-fli/types
           path: types
           token: ${{ secrets.TYPES_REPO_TOKEN }}
 
