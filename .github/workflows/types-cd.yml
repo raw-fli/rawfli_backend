@@ -69,7 +69,7 @@ jobs:
         with:
           repository: rawfli/types
           path: types
-          token: ${{ secrets.TYPES_REPO_TOKEN }}
+          token: ${{ secrets.NPM_TOKEN }}
 
       - name: Install types dependencies
         working-directory: types
