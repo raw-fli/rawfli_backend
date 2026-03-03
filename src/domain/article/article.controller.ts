@@ -9,6 +9,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtGuard } from 'src/domain/auth/guards/jwt.guard';
 import { UserDecorator } from 'src/common/decorators/user.decorator';
 import { CreateArticleDto } from 'src/domain/article/dto/create-article.dto';
@@ -20,10 +21,13 @@ import { DecodedUserToken } from 'src/domain/user/entity/user.entity';
 import { ArticleService } from 'src/domain/article/article.service';
 import { createResponseForm, Try } from 'src/common/types';
 
+@ApiTags('articles')
 @Controller('api/v1/boards/:boardId/articles')
 export class ArticleController {
   constructor(private readonly articleService: ArticleService) { }
 
+  @ApiOperation({ summary: '게시글 목록 조회' })
+  @ApiOkResponse({ type: ArticleListResponseDto })
   @Get()
   async getArticles(
     @Param('boardId', ParseIntPipe) boardId: number,
@@ -38,6 +42,8 @@ export class ArticleController {
     return createResponseForm(result);
   }
 
+  @ApiOperation({ summary: '인기 게시글 목록 조회' })
+  @ApiOkResponse({ type: ArticleListResponseDto })
   @Get('popular')
   async getPopularArticles(
     @Param('boardId', ParseIntPipe) boardId: number,
@@ -53,6 +59,9 @@ export class ArticleController {
   }
 
 
+  @ApiOperation({ summary: '게시글 작성' })
+  @ApiBearerAuth()
+  @ApiCreatedResponse({ type: ArticleResponseDto })
   @UseGuards(JwtGuard)
   @Post()
   async createArticle(
@@ -64,6 +73,8 @@ export class ArticleController {
     return createResponseForm(article);
   }
 
+  @ApiOperation({ summary: '게시글 조회' })
+  @ApiOkResponse({ type: ArticleResponseDto })
   @Get(':articleId')
   async getArticle(
     @Param('boardId', ParseIntPipe) boardId: number,
@@ -73,6 +84,9 @@ export class ArticleController {
     return createResponseForm(article);
   }
 
+  @ApiOperation({ summary: '게시글 삭제' })
+  @ApiBearerAuth()
+  @ApiOkResponse({ type: DeletedPostResponseDto })
   @UseGuards(JwtGuard)
   @Delete(':articleId')
   async deleteArticle(
@@ -84,6 +98,8 @@ export class ArticleController {
     return createResponseForm(deleted);
   }
 
+  @ApiOperation({ summary: '게시글 좋아요 토글' })
+  @ApiBearerAuth()
   @UseGuards(JwtGuard)
   @Post(':articleId/like')
   async toggleLike(
@@ -95,6 +111,9 @@ export class ArticleController {
     return createResponseForm(result);
   }
 
+  @ApiOperation({ summary: '댓글 작성' })
+  @ApiBearerAuth()
+  @ApiCreatedResponse({ type: CommentResponseDto })
   @UseGuards(JwtGuard)
   @Post(':articleId/comments')
   async createComment(
@@ -107,6 +126,8 @@ export class ArticleController {
     return createResponseForm(comment);
   }
 
+  @ApiOperation({ summary: '댓글 삭제' })
+  @ApiBearerAuth()
   @UseGuards(JwtGuard)
   @Delete(':articleId/comments/:commentId')
   async deleteComment(

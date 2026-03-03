@@ -7,6 +7,7 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import * as compression from 'compression';
 import { ValidationError } from 'class-validator';
 import { extractConstraints } from './common/utils/utils';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -25,6 +26,15 @@ async function bootstrap() {
     whitelist: true,
     transform: true,
   }));
+
+  const config = new DocumentBuilder()
+    .setTitle('Rawfli API')
+    .setDescription('The Rawfli API description')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build();
+  const documentFactory = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api', app, documentFactory);
 
   if (module.hot) {
     module.hot.accept();
