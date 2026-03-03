@@ -6,11 +6,12 @@ import {
   ManyToMany,
   ManyToOne,
   PrimaryColumn,
+  Relation,
 } from 'typeorm';
 import { v7 as uuidv7 } from 'uuid';
-import { GalleryPost } from './post.entity';
-import { User } from 'src/domain/user/entity/user.entity';
 import { Image } from 'src/domain/aws/entity/image.entity';
+import type { User } from 'src/domain/user/entity/user.entity';
+import type { GalleryPost } from 'src/domain/post/entity/post.entity';
 
 @Entity()
 export class Photo {
@@ -28,19 +29,19 @@ export class Photo {
   @JoinColumn()
   image!: Image;
 
-  @ManyToOne(() => GalleryPost, (post) => post.photos, { onDelete: 'CASCADE' })
+  @ManyToOne('GalleryPost', (post: GalleryPost) => post.photos, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'postId', referencedColumnName: 'id' })
   @JoinColumn({ name: 'postBoardId', referencedColumnName: 'board' })
-  post!: GalleryPost;
+  post!: Relation<GalleryPost>;
 
-  @ManyToOne(() => User, (user) => user.photos)
-  author!: User;
+  @ManyToOne('User', (user: User) => user.photos)
+  author!: Relation<User>;
 
   @Column({ type: 'text', nullable: true })
   description?: string;
 
-  @ManyToMany(() => User, (user) => user.likedPhotos)
-  likes!: User[];
+  @ManyToMany('User', (user: User) => user.likedPhotos)
+  likes!: Relation<User[]>;
 
   @ManyToMany('Article', 'referencedPhotos')
   referencedInArticles!: any[];

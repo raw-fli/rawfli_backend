@@ -6,11 +6,11 @@ import {
   ManyToMany,
   OneToMany,
 } from 'typeorm';
-import { Comment } from 'src/domain/post/entity/comment.entity';
 import { CommonColumns } from 'src/common/entities/common-columns';
 import { Image } from 'src/domain/aws/entity/image.entity';
-import { Photo } from 'src/domain/post/entity/photo.entity';
-import { Post } from 'src/domain/post/entity/post.entity';
+import type { Comment } from 'src/common/entities/comment.entity';
+import type { Photo } from 'src/common/entities/photo.entity';
+import type { Post } from 'src/domain/post/entity/post.entity';
 
 export type DecodedUserToken = Pick<User, 'id' | 'email' | 'username'>;
 

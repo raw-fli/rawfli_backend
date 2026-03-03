@@ -13,9 +13,8 @@ import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags
 import { JwtGuard } from 'src/domain/auth/guards/jwt.guard';
 import { UserDecorator } from 'src/common/decorators/user.decorator';
 import { CreateArticleDto } from 'src/domain/article/dto/create-article.dto';
-import { CreateCommentDto } from 'src/domain/post/dto/create-comment.dto';
-import { CommentResponseDto } from 'src/domain/post/dto/comment.response.dto';
-import { DeletedPostResponseDto } from 'src/domain/post/dto/deleted-post.response.dto';
+import { CreateCommentDto } from 'src/common/dtos/create-comment.dto';
+import { CommentResponseDto } from 'src/common/dtos/comment.response.dto';
 import { ArticleListResponseDto, ArticleResponseDto } from 'src/domain/article/dto/article.response.dto';
 import { DecodedUserToken } from 'src/domain/user/entity/user.entity';
 import { ArticleService } from 'src/domain/article/article.service';

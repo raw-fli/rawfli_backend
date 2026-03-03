@@ -2,17 +2,17 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { createError, ErrorCode } from 'src/common/exception/error';
-import { CreateCommentDto } from 'src/domain/post/dto/create-comment.dto';
+import { CreateCommentDto } from 'src/common/dtos/create-comment.dto';
 import { CreatePostDto } from 'src/domain/post/dto/create-post.dto';
-import { CommentResponseDto } from 'src/domain/post/dto/comment.response.dto';
+import { CommentResponseDto } from 'src/common/dtos/comment.response.dto';
 import { DeletedPostResponseDto } from 'src/domain/post/dto/deleted-post.response.dto';
 import { PostListItemResponseDto, PostListResponseDto, PostResponseDto } from 'src/domain/post/dto/post.response.dto';
 import { Board } from 'src/domain/board/entity/board.entity';
-import { Comment } from 'src/domain/post/entity/comment.entity';
+import { Comment } from 'src/common/entities/comment.entity';
 import { Image } from 'src/domain/aws/entity/image.entity';
-import { Photo } from 'src/domain/post/entity/photo.entity';
+import { Photo } from 'src/common/entities/photo.entity';
 import { GalleryPost, Post } from 'src/domain/post/entity/post.entity';
-import { DeletedPost } from 'src/domain/post/entity/deleted-post.entity';
+import { DeletedPost } from 'src/common/entities/deleted-post.entity';
 import { DecodedUserToken, User } from 'src/domain/user/entity/user.entity';
 import { DataSource, In, Repository } from 'typeorm';
 

@@ -2,7 +2,7 @@ import { BeforeInsert, Column, Entity, ManyToOne, OneToMany, PrimaryColumn } fro
 import { v7 as uuidv7 } from 'uuid';
 import { CreatedAtColumn } from 'src/common/entities/created-at.column';
 import { User } from 'src/domain/user/entity/user.entity';
-import { Photo } from 'src/domain/post/entity/photo.entity';
+import { Photo } from 'src/common/entities/photo.entity';
 
 @Entity()
 export class Image extends CreatedAtColumn {

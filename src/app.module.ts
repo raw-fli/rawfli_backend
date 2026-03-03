@@ -13,11 +13,11 @@ import { BoardsModule } from './domain/board/board.module';
 import { PostsModule } from './domain/post/post.module';
 import { User } from './domain/user/entity/user.entity';
 import { Post, GalleryPost } from './domain/post/entity/post.entity';
-import { Comment } from './domain/post/entity/comment.entity';
-import { Photo } from './domain/post/entity/photo.entity';
+import { Comment } from './common/entities/comment.entity';
+import { Photo } from './common/entities/photo.entity';
 import { Image } from './domain/aws/entity/image.entity';
 import { Board } from './domain/board/entity/board.entity';
-import { DeletedPost } from './domain/post/entity/deleted-post.entity';
+import { DeletedPost } from './common/entities/deleted-post.entity';
 import { Article } from './domain/article/entity/article.entity';
 import { ArticleModule } from './domain/article/article.module';
 

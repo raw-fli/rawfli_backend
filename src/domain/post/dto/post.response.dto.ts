@@ -1,6 +1,6 @@
 import { Expose, Type } from 'class-transformer';
 import { UserResponseDto } from 'src/domain/user/dto/user.response.dto';
-import { CommentResponseDto } from './comment.response.dto';
+import { CommentResponseDto } from '../../../common/dtos/comment.response.dto';
 
 export class PostResponseDto {
   @Expose()

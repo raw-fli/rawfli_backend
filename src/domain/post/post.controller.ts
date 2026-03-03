@@ -11,9 +11,9 @@ import {
 } from '@nestjs/common';
 import { JwtGuard } from 'src/domain/auth/guards/jwt.guard';
 import { UserDecorator } from 'src/common/decorators/user.decorator';
-import { CreateCommentDto } from 'src/domain/post/dto/create-comment.dto';
+import { CreateCommentDto } from 'src/common/dtos/create-comment.dto';
 import { CreatePostDto } from 'src/domain/post/dto/create-post.dto';
-import { CommentResponseDto } from 'src/domain/post/dto/comment.response.dto';
+import { CommentResponseDto } from 'src/common/dtos/comment.response.dto';
 import { DeletedPostResponseDto } from 'src/domain/post/dto/deleted-post.response.dto';
 import { PostListResponseDto, PostResponseDto } from 'src/domain/post/dto/post.response.dto';
 import { DecodedUserToken } from 'src/domain/user/entity/user.entity';

@@ -9,16 +9,16 @@ import {
   ArticleListResponseDto,
   ArticleResponseDto,
 } from 'src/domain/article/dto/article.response.dto';
-import { CreateCommentDto } from 'src/domain/post/dto/create-comment.dto';
-import { CommentResponseDto } from 'src/domain/post/dto/comment.response.dto';
+import { CreateCommentDto } from 'src/common/dtos/create-comment.dto';
+import { CommentResponseDto } from 'src/common/dtos/comment.response.dto';
 import { DeletedPostResponseDto } from 'src/domain/post/dto/deleted-post.response.dto';
 import { Board } from 'src/domain/board/entity/board.entity';
-import { Comment } from 'src/domain/post/entity/comment.entity';
 import { Image } from 'src/domain/aws/entity/image.entity';
-import { Photo } from 'src/domain/post/entity/photo.entity';
-import { DeletedPost } from 'src/domain/post/entity/deleted-post.entity';
 import { DecodedUserToken, User } from 'src/domain/user/entity/user.entity';
 import { DataSource, In, Repository } from 'typeorm';
+import { Photo } from 'src/common/entities/photo.entity';
+import { DeletedPost } from 'src/common/entities/deleted-post.entity';
+import { Comment } from 'src/common/entities/comment.entity';
 
 @Injectable()
 export class ArticleService {

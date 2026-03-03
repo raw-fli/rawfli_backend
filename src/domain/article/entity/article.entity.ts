@@ -1,7 +1,7 @@
 import { ChildEntity, JoinTable, ManyToMany } from 'typeorm';
 import { Post } from 'src/domain/post/entity/post.entity';
-import { Photo } from 'src/domain/post/entity/photo.entity';
 import { Image } from 'src/domain/aws/entity/image.entity';
+import { Photo } from 'src/common/entities/photo.entity';
 
 @ChildEntity('community')
 export class Article extends Post {
