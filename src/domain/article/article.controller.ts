@@ -135,6 +135,8 @@ export class ArticleController {
   @Delete(':articleId/comments/:commentId')
   async deleteComment(
     @UserDecorator() user: DecodedUserToken,
+    @Param('boardId', ParseIntPipe) _boardId: number,
+    @Param('articleId', ParseIntPipe) _articleId: number,
     @Param('commentId', ParseIntPipe) commentId: number,
   ): Promise<Try<DeletedCommentResponseDto>> {
     const deleted = await this.articleService.deleteComment(user, commentId);

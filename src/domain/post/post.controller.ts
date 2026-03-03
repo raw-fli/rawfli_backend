@@ -96,6 +96,8 @@ export class PostsController {
   @Delete(':postId/comments/:commentId')
   async deleteComment(
     @UserDecorator() user: DecodedUserToken,
+    @Param('boardId', ParseIntPipe) _boardId: number,
+    @Param('postId', ParseIntPipe) _postId: number,
     @Param('commentId', ParseIntPipe) commentId: number,
   ): Promise<Try<null>> {
     await this.postsService.deleteComment(user, commentId);
