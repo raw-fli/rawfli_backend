@@ -20,6 +20,7 @@ import { DecodedUserToken } from 'src/domain/user/entity/user.entity';
 import { PostsService } from 'src/domain/post/post.service';
 import { createResponseForm, Try } from 'src/common/types';
 import { ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiResponse } from 'src/common/dtos/api-response.dto';
 import { LikePostResponseDto } from '../../common/dtos/like-article.response.dto';
 import { DeletedCommentResponseDto } from 'src/common/dtos/deleted-comment.response.dto';
 
@@ -29,7 +30,7 @@ export class PostsController {
   constructor(private readonly postsService: PostsService) { }
 
   @ApiOperation({ summary: '게시글 목록 조회' })
-  @ApiOkResponse({ type: PostListResponseDto })
+  @ApiOkResponse({ type: ApiResponse(PostListResponseDto) })
   @Get()
   async getPosts(
     @Param('boardId', ParseIntPipe) boardId: number,
@@ -45,7 +46,7 @@ export class PostsController {
   }
 
   @ApiOperation({ summary: '게시글 작성' })
-  @ApiCreatedResponse({ type: PostResponseDto })
+  @ApiCreatedResponse({ type: ApiResponse(PostResponseDto) })
   @UseGuards(JwtGuard)
   @Post()
   async createPost(
@@ -58,7 +59,7 @@ export class PostsController {
   }
 
   @ApiOperation({ summary: '게시글 조회' })
-  @ApiOkResponse({ type: PostResponseDto })
+  @ApiOkResponse({ type: ApiResponse(PostResponseDto) })
   @Get(':postId')
   async getPost(
     @Param('boardId', ParseIntPipe) boardId: number,
@@ -69,7 +70,7 @@ export class PostsController {
   }
 
   @ApiOperation({ summary: '게시글 삭제' })
-  @ApiOkResponse({ type: DeletedPostResponseDto })
+  @ApiOkResponse({ type: ApiResponse(DeletedPostResponseDto) })
   @UseGuards(JwtGuard)
   @Delete(':postId')
   async deletePost(
@@ -82,7 +83,7 @@ export class PostsController {
   }
 
   @ApiOperation({ summary: '게시글 좋아요 토글' })
-  @ApiOkResponse({ type: LikePostResponseDto })
+  @ApiOkResponse({ type: ApiResponse(LikePostResponseDto) })
   @UseGuards(JwtGuard)
   @Post(':postId/like')
   async toggleLike(
@@ -95,7 +96,7 @@ export class PostsController {
   }
 
   @ApiOperation({ summary: '댓글 작성' })
-  @ApiCreatedResponse({ type: CommentResponseDto })
+  @ApiCreatedResponse({ type: ApiResponse(CommentResponseDto) })
   @UseGuards(JwtGuard)
   @Post(':postId/comments')
   async createComment(
@@ -109,7 +110,7 @@ export class PostsController {
   }
 
   @ApiOperation({ summary: '댓글 삭제' })
-  @ApiOkResponse({ type: DeletedCommentResponseDto })
+  @ApiOkResponse({ type: ApiResponse(DeletedCommentResponseDto) })
   @UseGuards(JwtGuard)
   @Delete(':postId/comments/:commentId')
   async deleteComment(

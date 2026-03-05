@@ -10,6 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiResponse } from 'src/common/dtos/api-response.dto';
 import { JwtGuard } from 'src/domain/auth/guards/jwt.guard';
 import { UserDecorator } from 'src/common/decorators/user.decorator';
 import { CreateArticleDto } from 'src/domain/article/dto/create-article.dto';
@@ -30,7 +31,7 @@ export class ArticleController {
   constructor(private readonly articleService: ArticleService) { }
 
   @ApiOperation({ summary: '게시글 목록 조회' })
-  @ApiOkResponse({ type: ArticleListResponseDto })
+  @ApiOkResponse({ type: ApiResponse(ArticleListResponseDto) })
   @Get()
   async getArticles(
     @Param('boardId', ParseIntPipe) boardId: number,
@@ -45,7 +46,7 @@ export class ArticleController {
   }
 
   @ApiOperation({ summary: '인기 게시글 목록 조회' })
-  @ApiOkResponse({ type: ArticleListResponseDto })
+  @ApiOkResponse({ type: ApiResponse(ArticleListResponseDto) })
   @Get('popular')
   async getPopularArticles(
     @Param('boardId', ParseIntPipe) boardId: number,
@@ -62,7 +63,7 @@ export class ArticleController {
 
   @ApiOperation({ summary: '게시글 작성' })
   @ApiBearerAuth()
-  @ApiCreatedResponse({ type: ArticleResponseDto })
+  @ApiCreatedResponse({ type: ApiResponse(ArticleResponseDto) })
   @UseGuards(JwtGuard)
   @Post()
   async createArticle(
@@ -75,7 +76,7 @@ export class ArticleController {
   }
 
   @ApiOperation({ summary: '게시글 조회' })
-  @ApiOkResponse({ type: ArticleResponseDto })
+  @ApiOkResponse({ type: ApiResponse(ArticleResponseDto) })
   @Get(':articleId')
   async getArticle(
     @Param('boardId', ParseIntPipe) boardId: number,
@@ -87,7 +88,7 @@ export class ArticleController {
 
   @ApiOperation({ summary: '게시글 삭제' })
   @ApiBearerAuth()
-  @ApiOkResponse({ type: DeletedArticleResponseDto })
+  @ApiOkResponse({ type: ApiResponse(DeletedArticleResponseDto) })
   @UseGuards(JwtGuard)
   @Delete(':articleId')
   async deleteArticle(
@@ -101,7 +102,7 @@ export class ArticleController {
 
   @ApiOperation({ summary: '게시글 좋아요 토글' })
   @ApiBearerAuth()
-  @ApiOkResponse({ type: LikePostResponseDto })
+  @ApiOkResponse({ type: ApiResponse(LikePostResponseDto) })
   @UseGuards(JwtGuard)
   @Post(':articleId/like')
   async toggleLike(
@@ -115,7 +116,7 @@ export class ArticleController {
 
   @ApiOperation({ summary: '댓글 작성' })
   @ApiBearerAuth()
-  @ApiCreatedResponse({ type: CommentResponseDto })
+  @ApiCreatedResponse({ type: ApiResponse(CommentResponseDto) })
   @UseGuards(JwtGuard)
   @Post(':articleId/comments')
   async createComment(
@@ -130,7 +131,7 @@ export class ArticleController {
 
   @ApiOperation({ summary: '댓글 삭제' })
   @ApiBearerAuth()
-  @ApiOkResponse({ type: DeletedCommentResponseDto })
+  @ApiOkResponse({ type: ApiResponse(DeletedCommentResponseDto) })
   @UseGuards(JwtGuard)
   @Delete(':articleId/comments/:commentId')
   async deleteComment(
