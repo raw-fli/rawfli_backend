@@ -40,8 +40,8 @@ export class AuthController {
   @ApiCreatedResponse({ type: ApiResponse(TokenDto) })
   @UseGuards(LocalGuard)
   @Post('login')
-  login(@UserDecorator() user: DecodedUserToken, @Body() body: LoginUserDto): Try<string> {
+  login(@UserDecorator() user: DecodedUserToken, @Body() body: LoginUserDto): Try<{ token: string }> {
     const token = this.authService.userLogin(user);
-    return createResponseForm(token);
+    return createResponseForm({ token });
   }
 }
