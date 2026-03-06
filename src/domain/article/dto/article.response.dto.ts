@@ -72,6 +72,9 @@ export class ArticleListItemResponseDto {
   title: string;
 
   @Expose()
+  content: string;
+
+  @Expose()
   @Type(() => UserResponseDto)
   author: UserResponseDto;
 
