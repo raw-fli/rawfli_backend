@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { Expose, Type } from 'class-transformer';
 
 export class SearchAuthorResponseDto {
@@ -9,6 +10,7 @@ export class SearchAuthorResponseDto {
 }
 
 export class SearchResultItemResponseDto {
+  @ApiProperty({ enum: ['post', 'article'] })
   @Expose()
   type!: 'post' | 'article';
 
