@@ -1,6 +1,6 @@
 import { Controller, Get, Post, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
-import { ApiConsumes, ApiOperation, ApiTags } from "@nestjs/swagger";
+import { ApiBody, ApiConsumes, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { JwtGuard } from "src/domain/auth/guards/jwt.guard";
 import { UserDecorator } from "src/common/decorators/user.decorator";
 import { Image } from "src/domain/aws/entity/image.entity";
@@ -23,6 +23,17 @@ export class AwsController {
   @ApiOperation({ summary: '이미지 업로드' })
   @UseGuards(JwtGuard)
   @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        image: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
   @Post('upload')
   @UseInterceptors(FileInterceptor('image'))
   async uploadFile(
