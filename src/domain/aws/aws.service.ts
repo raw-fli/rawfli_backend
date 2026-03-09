@@ -30,20 +30,24 @@ export class AwsService {
     });
   }
 
-  async uploadImage(user: DecodedUserToken, file: Express.Multer.File) {
-    const originalName = Buffer.from(file.originalname, 'latin1').toString('utf8');
-    const key = `${Date.now()}-${originalName}`;
-    const command = new PutObjectCommand({
-      Bucket: this.configService.get('AWS_S3_BUCKET'),
-      Key: key,
-      Body: file.buffer,
-      ACL: 'public-read',
+  async uploadImages(user: DecodedUserToken, files: Express.Multer.File[]) {
+    const uploads = files.map(async (file) => {
+      const originalName = Buffer.from(file.originalname, 'latin1').toString('utf8');
+      const key = `${Date.now()}-${originalName}`;
+      const command = new PutObjectCommand({
+        Bucket: this.configService.get('AWS_S3_BUCKET'),
+        Key: key,
+        Body: file.buffer,
+        ACL: 'public-read',
+      });
+
+      await this.s3Client.send(command);
+      const newImage = new Image();
+      newImage.key = key;
+      newImage.uploader = { id: user.id } as User;
+      return await this.imageRepository.save(newImage);
     });
 
-    await this.s3Client.send(command);
-    const newImage = new Image();
-    newImage.key = key;
-    newImage.uploader = { id: user.id } as User;
-    return await this.imageRepository.save(newImage);
+    return await Promise.all(uploads);
   }
 }

@@ -1,6 +1,6 @@
-import { Controller, Get, Post, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
-import { FileInterceptor } from "@nestjs/platform-express";
-import { ApiBody, ApiConsumes, ApiOperation, ApiTags } from "@nestjs/swagger";
+import { Controller, Get, Post, UploadedFiles, UseGuards, UseInterceptors } from "@nestjs/common";
+import { FilesInterceptor } from "@nestjs/platform-express";
+import { ApiBody, ApiConsumes, ApiOkResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { JwtGuard } from "src/domain/auth/guards/jwt.guard";
 import { UserDecorator } from "src/common/decorators/user.decorator";
 import { Image } from "src/domain/aws/entity/image.entity";
@@ -21,26 +21,30 @@ export class AwsController {
   }
 
   @ApiOperation({ summary: '이미지 업로드' })
+  @ApiOkResponse({ type: Image, isArray: true })
   @UseGuards(JwtGuard)
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
       type: 'object',
       properties: {
-        image: {
-          type: 'string',
-          format: 'binary',
+        images: {
+          type: 'array',
+          items: {
+            type: 'string',
+            format: 'binary',
+          },
         },
       },
     },
   })
   @Post('upload')
-  @UseInterceptors(FileInterceptor('image'))
+  @UseInterceptors(FilesInterceptor('images'))
   async uploadFile(
     @UserDecorator() user: DecodedUserToken,
-    @UploadedFile() image: Express.Multer.File,
-  ): Promise<Try<Image>> {
-    const imageEntity = await this.awsService.uploadImage(user, image);
-    return createResponseForm(imageEntity);
+    @UploadedFiles() images: Express.Multer.File[],
+  ): Promise<Try<Image[]>> {
+    const imageEntities = await this.awsService.uploadImages(user, images);
+    return createResponseForm(imageEntities);
   }
 }
