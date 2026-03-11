@@ -12,6 +12,7 @@ import { Image } from 'src/domain/aws/entity/image.entity';
 import { Comment } from 'src/common/entities/comment.entity';
 import { Photo } from 'src/common/entities/photo.entity';
 import { Post } from 'src/domain/post/entity/post.entity';
+import { Follow } from './follow.entity';
 
 export type DecodedUserToken = Pick<User, 'id' | 'email' | 'username'>;
 
@@ -57,4 +58,10 @@ export class User extends CommonColumns {
     inverseJoinColumn: { name: 'blockedUserId', referencedColumnName: 'id' },
   })
   blockedUsers!: User[];
+
+  @OneToMany(() => Follow, (follow) => follow.following)
+  followers!: Follow[];
+
+  @OneToMany(() => Follow, (follow) => follow.follower)
+  followings!: Follow[];
 }
