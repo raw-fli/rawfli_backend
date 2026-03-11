@@ -11,7 +11,7 @@ import {
 import { v7 as uuidv7 } from 'uuid';
 import { Image } from 'src/domain/aws/entity/image.entity';
 import { User } from 'src/domain/user/entity/user.entity';
-import { GalleryPost } from 'src/domain/post/entity/post.entity';
+import { Post } from 'src/domain/post/entity/post.entity';
 
 @Entity()
 export class Photo {
@@ -29,10 +29,10 @@ export class Photo {
   @JoinColumn()
   image!: Image;
 
-  @ManyToOne('GalleryPost', (post: GalleryPost) => post.photos, { onDelete: 'CASCADE' })
+  @ManyToOne('Post', (post: Post) => post.photos, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'postId', referencedColumnName: 'id' })
   @JoinColumn({ name: 'postBoardId', referencedColumnName: 'board' })
-  post!: Relation<GalleryPost>;
+  post!: Relation<Post>;
 
   @ManyToOne('User', (user: User) => user.photos)
   author!: Relation<User>;

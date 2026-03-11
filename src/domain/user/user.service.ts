@@ -37,7 +37,7 @@ export class UsersService {
   async getUserInfo(userId: number): Promise<UserInfoResponseDto> {
     const user = await this.usersRepository.findOne({
       where: { id: userId },
-      relations: ['posts', 'followers', 'followings'],
+      relations: ['articles', 'followers', 'followings'],
     });
 
     if (!user) {

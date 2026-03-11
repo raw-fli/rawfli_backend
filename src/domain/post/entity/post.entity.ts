@@ -1,27 +1,19 @@
 import {
   Column,
-  ChildEntity,
   Entity,
-  ManyToMany,
   ManyToOne,
   OneToMany,
   PrimaryColumn,
-  TableInheritance,
   JoinColumn,
   Relation,
 } from 'typeorm';
 import { Board } from 'src/domain/board/entity/board.entity';
-import { TimeColumns } from 'src/common/entities/time-columns';
 import { User } from 'src/domain/user/entity/user.entity';
 import { Photo } from 'src/common/entities/photo.entity';
-import { Comment } from 'src/common/entities/comment.entity';
+import { CommonColumns } from 'src/common/entities/common-columns';
 
 @Entity()
-@TableInheritance({ column: { type: 'text', name: 'type' } })
-export class Post extends TimeColumns {
-  @PrimaryColumn()
-  id!: number;
-
+export class Post extends CommonColumns {
   @PrimaryColumn({ type: 'int', name: 'boardId' })
   @ManyToOne(() => Board, (board) => board.posts)
   @JoinColumn({ name: 'boardId' })
@@ -36,18 +28,6 @@ export class Post extends TimeColumns {
   @Column('text')
   content!: string;
 
-  @ManyToMany('User', (user: User) => user.likedPosts)
-  likes!: Relation<User[]>;
-
-  @Column({ default: 0 })
-  views!: number;
-
-  @OneToMany('Comment', (comment: Comment) => comment.post)
-  comments!: Relation<Comment[]>;
-}
-
-@ChildEntity('gallery')
-export class GalleryPost extends Post {
   @OneToMany('Photo', (photo: Photo) => photo.post)
   photos!: Relation<Photo[]>;
 }

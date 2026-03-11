@@ -12,7 +12,7 @@ import { AwsModule } from './domain/aws/aws.module';
 import { BoardsModule } from './domain/board/board.module';
 import { PostsModule } from './domain/post/post.module';
 import { User } from './domain/user/entity/user.entity';
-import { Post, GalleryPost } from './domain/post/entity/post.entity';
+import { Post } from './domain/post/entity/post.entity';
 import { Comment } from './common/entities/comment.entity';
 import { Photo } from './common/entities/photo.entity';
 import { Image } from './domain/aws/entity/image.entity';
@@ -39,7 +39,7 @@ import { Follow } from './domain/user/entity/follow.entity';
         username: configService.get('POSTGRES_USER'),
         password: configService.get('POSTGRES_PASSWORD'),
         database: configService.get('POSTGRES_DATABASE'),
-        entities: [User, Post, Article, GalleryPost, Comment, Photo, Image, Board, DeletedPost, DeletedComment, Follow],
+        entities: [User, Post, Article, Comment, Photo, Image, Board, DeletedPost, DeletedComment, Follow],
         synchronize: true,
         // extra: {
         //   ssl: true,

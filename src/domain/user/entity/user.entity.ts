@@ -12,6 +12,7 @@ import { Image } from 'src/domain/aws/entity/image.entity';
 import { Comment } from 'src/common/entities/comment.entity';
 import { Photo } from 'src/common/entities/photo.entity';
 import { Post } from 'src/domain/post/entity/post.entity';
+import { Article } from 'src/domain/article/entity/article.entity';
 import { Follow } from './follow.entity';
 
 export type DecodedUserToken = Pick<User, 'id' | 'email' | 'username'>;
@@ -31,6 +32,9 @@ export class User extends CommonColumns {
   @Column({ type: 'text', nullable: true })
   profileImageKey!: string | null;
 
+  @OneToMany('Article', (article: Article) => article.author)
+  articles!: Relation<Article[]>;
+
   @OneToMany('Post', (post: Post) => post.author)
   posts!: Relation<Post[]>;
 
@@ -43,9 +47,9 @@ export class User extends CommonColumns {
   @OneToMany('Photo', (photo: Photo) => photo.author)
   photos!: Relation<Photo[]>;
 
-  @ManyToMany('Post', (post: Post) => post.likes)
-  @JoinTable({ name: 'users_liked_posts' })
-  likedPosts!: Relation<Post[]>;
+  @ManyToMany('Article', (article: Article) => article.likes)
+  @JoinTable({ name: 'users_liked_articles' })
+  likedArticles!: Relation<Article[]>;
 
   @ManyToMany('Photo', (photo: Photo) => photo.likes)
   @JoinTable({ name: 'users_liked_photos' })

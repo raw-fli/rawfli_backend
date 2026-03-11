@@ -1,5 +1,6 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Post } from 'src/domain/post/entity/post.entity';
+import { Article } from 'src/domain/article/entity/article.entity';
 
 type BoardType = 'community' | 'gallery';
 
@@ -16,6 +17,9 @@ export class Board {
 
   @Column({ type: 'text' })
   description!: string;
+
+  @OneToMany(() => Article, (article) => article.board)
+  articles!: Article[];
 
   @OneToMany(() => Post, (post) => post.board)
   posts!: Post[];

@@ -11,7 +11,7 @@ import {
 } from 'src/domain/article/dto/article.response.dto';
 import { CreateCommentDto } from 'src/common/dtos/create-comment.dto';
 import { CommentResponseDto } from 'src/common/dtos/comment.response.dto';
-import { DeletedPostResponseDto } from 'src/domain/post/dto/deleted-post.response.dto';
+import { DeletedArticleResponseDto } from 'src/domain/article/dto/deleted-article.response.dto';
 import { Board } from 'src/domain/board/entity/board.entity';
 import { Image } from 'src/domain/aws/entity/image.entity';
 import { DecodedUserToken, User } from 'src/domain/user/entity/user.entity';
@@ -28,10 +28,7 @@ export class ArticleService {
     @InjectRepository(Article) private readonly articleRepository: Repository<Article>,
     @InjectRepository(Board) private readonly boardRepository: Repository<Board>,
     @InjectRepository(Comment) private readonly commentRepository: Repository<Comment>,
-    @InjectRepository(Photo) private readonly photoRepository: Repository<Photo>,
-    @InjectRepository(Image) private readonly imageRepository: Repository<Image>,
     @InjectRepository(User) private readonly userRepository: Repository<User>,
-    @InjectRepository(DeletedPost) private readonly deletedPostRepository: Repository<DeletedPost>,
     private readonly dataSource: DataSource,
   ) { }
 
@@ -108,8 +105,8 @@ export class ArticleService {
      */
     const GRAVITY = 1.8;
     const hnScore = `(
-      (SELECT COUNT(*) FROM users_liked_posts ulp WHERE ulp."postId" = article.id) * 2.0
-      + (SELECT COUNT(*) FROM comment c WHERE c."postId" = article.id AND c."deletedAt" IS NULL)
+      (SELECT COUNT(*) FROM users_liked_articles ula WHERE ula."articleId" = article.id) * 2.0
+      + (SELECT COUNT(*) FROM comment c WHERE c."articleId" = article.id AND c."deletedAt" IS NULL)
       + SQRT(GREATEST(article.views, 1))
     ) / POW(
       EXTRACT(EPOCH FROM (NOW() - article."createdAt")) / 3600.0 + 2.0,
@@ -188,7 +185,7 @@ export class ArticleService {
     return dto;
   }
 
-  async deleteArticle(user: DecodedUserToken, boardId: number, articleId: number): Promise<DeletedPostResponseDto> {
+  async deleteArticle(user: DecodedUserToken, boardId: number, articleId: number): Promise<DeletedArticleResponseDto> {
     await this.validateCommunityBoard(boardId);
 
     const article = await this.articleRepository.findOne({
@@ -220,7 +217,7 @@ export class ArticleService {
       return result;
     });
 
-    return plainToInstance(DeletedPostResponseDto, saved, { excludeExtraneousValues: true });
+    return plainToInstance(DeletedArticleResponseDto, saved, { excludeExtraneousValues: true });
   }
 
   async toggleLike(user: DecodedUserToken, boardId: number, articleId: number): Promise<{ liked: boolean }> {
@@ -262,13 +259,13 @@ export class ArticleService {
     }
 
     const comment = new Comment();
-    comment.post = article;
+    comment.article = article;
     comment.author = { id: user.id } as User;
     comment.content = dto.content;
 
     if (dto.parentId) {
       const parentComment = await this.commentRepository.findOne({
-        where: { id: dto.parentId, post: { id: articleId, board: boardId as any } },
+        where: { id: dto.parentId, article: { id: articleId, board: boardId as any } },
       });
 
       if (!parentComment) {
@@ -285,7 +282,7 @@ export class ArticleService {
   async deleteComment(user: DecodedUserToken, commentId: number): Promise<DeletedCommentResponseDto> {
     const comment = await this.commentRepository.findOne({
       where: { id: commentId },
-      relations: ['author', 'post', 'post.board'],
+      relations: ['author', 'article', 'article.board'],
     });
 
     if (!comment) {
@@ -298,8 +295,8 @@ export class ArticleService {
 
     const deletedComment = new DeletedComment();
     deletedComment.originalCommentId = comment.id;
-    deletedComment.postId = comment.post.id;
-    deletedComment.boardId = comment.post.board.id;
+    deletedComment.postId = comment.article.id;
+    deletedComment.boardId = comment.article.board.id;
     deletedComment.authorId = comment.author.id;
     deletedComment.content = comment.content;
     deletedComment.originalCreatedAt = comment.createdAt as Date;

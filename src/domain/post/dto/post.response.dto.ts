@@ -1,6 +1,5 @@
 import { Expose, Type } from 'class-transformer';
 import { UserResponseDto } from 'src/domain/user/dto/user.response.dto';
-import { CommentResponseDto } from '../../../common/dtos/comment.response.dto';
 
 export class PostResponseDto {
   @Expose()
@@ -17,20 +16,7 @@ export class PostResponseDto {
   author: UserResponseDto;
 
   @Expose()
-  views: number;
-
-  @Expose()
-  likesCount: number;
-
-  @Expose()
-  @Type(() => CommentResponseDto)
-  comments: CommentResponseDto[];
-
-  @Expose()
   createdAt: Date;
-
-  @Expose()
-  updatedAt: Date;
 
   constructor(partial: Partial<PostResponseDto>) {
     Object.assign(this, partial);
@@ -47,12 +33,6 @@ export class PostListItemResponseDto {
   @Expose()
   @Type(() => UserResponseDto)
   author: UserResponseDto;
-
-  @Expose()
-  views: number;
-
-  @Expose()
-  commentCount: number;
 
   @Expose()
   createdAt: Date;

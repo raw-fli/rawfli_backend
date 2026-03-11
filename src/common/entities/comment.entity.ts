@@ -1,14 +1,14 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, Relation } from 'typeorm';
 import { CommonColumns } from 'src/common/entities/common-columns';
-import { Post } from 'src/domain/post/entity/post.entity';
+import { Article } from 'src/domain/article/entity/article.entity';
 import { User } from 'src/domain/user/entity/user.entity';
 
 @Entity()
 export class Comment extends CommonColumns {
-  @ManyToOne('Post', (post: Post) => post.comments, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'postId', referencedColumnName: 'id' })
-  @JoinColumn({ name: 'postBoardId', referencedColumnName: 'board' })
-  post!: Relation<Post>;
+  @ManyToOne('Article', (article: Article) => article.comments, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'articleId', referencedColumnName: 'id' })
+  @JoinColumn({ name: 'articleBoardId', referencedColumnName: 'board' })
+  article!: Relation<Article>;
 
   @ManyToOne('User', (user: User) => user.comments)
   author!: Relation<User>;
