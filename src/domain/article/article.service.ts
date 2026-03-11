@@ -81,7 +81,7 @@ export class ArticleService {
     const [articles, total] = await this.articleRepository.findAndCount({
       where: { board: boardId as any },
       relations: ['author', 'comments', 'likes', 'attachedImages', 'referencedPhotos', 'referencedPhotos.image'],
-      order: { createdAt: 'DESC' },
+      order: { id: 'DESC' },
       skip: (page - 1) * limit,
       take: limit,
     });
