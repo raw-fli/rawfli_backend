@@ -27,6 +27,9 @@ export class User extends CommonColumns {
   @Column({ type: 'text' })
   password!: string;
 
+  @Column({ type: 'text', nullable: true })
+  profileImageKey!: string | null;
+
   @OneToMany('Post', (post: Post) => post.author)
   posts!: Relation<Post[]>;
 
