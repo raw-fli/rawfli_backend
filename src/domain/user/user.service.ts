@@ -1,10 +1,12 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { createError, ErrorCode } from 'src/common/exception/error';
 import { CreateUserDto } from 'src/domain/user/dto/create-user.dto';
 import { DecodedUserToken, User } from 'src/domain/user/entity/user.entity';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
+import { plainToInstance } from 'class-transformer';
+import { UserInfoResponseDto } from './dto/user-info.response.dto';
 
 @Injectable()
 export class UsersService {
@@ -30,6 +32,22 @@ export class UsersService {
     newUser.username = createUserDto.username;
     newUser.password = hashedPassword;
     return await this.usersRepository.save(newUser);
+  }
+
+  async getUserInfo(userId: number): Promise<UserInfoResponseDto> {
+    const user = await this.usersRepository.findOne({
+      where: { id: userId },
+      relations: ['posts', 'followers', 'followings'],
+    });
+
+    if (!user) {
+      throw new NotFoundException(createError(ErrorCode.USER_NOT_FOUND));
+    }
+
+    const dto = plainToInstance(UserInfoResponseDto, user, { excludeExtraneousValues: true });
+    dto.followerCount = user.followers?.length ?? 0;
+    dto.followingCount = user.followings?.length ?? 0;
+    return dto;
   }
 
   async findOneByEmail(
