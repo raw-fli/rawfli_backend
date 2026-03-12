@@ -17,6 +17,10 @@ export class UserResponseDto {
   @Exclude()
   password: string;
 
+  @ApiProperty({ nullable: true })
+  @Expose()
+  profileImageKey: string | null;
+
   @ApiProperty()
   @Expose()
   createdAt: Date;
