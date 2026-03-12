@@ -59,6 +59,10 @@ export class PhotoResponseDto {
   shutterSpeedValue: number | null;
 
   @Expose()
+  @ApiPropertyOptional({ type: Number, nullable: true })
+  focalLength: number | null;
+
+  @Expose()
   @ApiPropertyOptional({ type: () => PhotoCameraResponseDto, nullable: true })
   @Type(() => PhotoCameraResponseDto)
   camera: PhotoCameraResponseDto | null;

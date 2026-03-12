@@ -58,6 +58,9 @@ export class Photo {
   @Column({ type: 'float', nullable: true })
   shutterSpeedValue!: number | null;
 
+  @Column({ type: 'float', nullable: true })
+  focalLength!: number | null;
+
   @ManyToOne(() => Camera, { nullable: true })
   @JoinColumn()
   camera!: Relation<Camera> | null;
