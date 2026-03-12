@@ -55,7 +55,9 @@ export class PostsService {
         const images = await manager.findBy(Image, { id: In(dto.imageIds) });
         const photos = await Promise.all(
           dto.imageIds.map(async (imageId, index) => {
-            const image = images.find((img) => img.id === imageId)!;
+            const image = images.find((img) => img.id === imageId);
+            if (!image) return null;
+
             const photo = new Photo();
             photo.image = image;
             photo.post = savedPost;
@@ -68,6 +70,7 @@ export class PostsService {
               photo.aperture = exif.aperture ?? null;
               photo.shutterSpeedDisplay = exif.shutterSpeedDisplay ?? null;
               photo.shutterSpeedValue = exif.shutterSpeedValue ?? null;
+              photo.focalLength = exif.focalLength ?? null;
 
               if (exif.cameraModel) {
                 photo.camera = await this.camerasService.findOrCreateByExif(
@@ -85,7 +88,7 @@ export class PostsService {
             return photo;
           }),
         );
-        await manager.save(Photo, photos);
+        await manager.save(Photo, photos.filter(Boolean) as Photo[]);
       }
 
       return plainToInstance(PostResponseDto, savedPost, { excludeExtraneousValues: true });
