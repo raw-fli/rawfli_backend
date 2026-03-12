@@ -77,7 +77,7 @@ export class ArticleService {
 
     const [articles, total] = await this.articleRepository.findAndCount({
       where: { board: boardId as any },
-      relations: ['author', 'comments', 'likes', 'attachedImages', 'referencedPhotos', 'referencedPhotos.image'],
+      relations: ['author', 'attachedImages', 'referencedPhotos', 'referencedPhotos.image'],
       order: { id: 'DESC' },
       skip: (page - 1) * limit,
       take: limit,
@@ -85,8 +85,8 @@ export class ArticleService {
 
     const items = articles.map((article) => {
       const dto = plainToInstance(ArticleListItemResponseDto, article, { excludeExtraneousValues: true });
-      dto.commentCount = article.comments?.length ?? 0;
-      dto.likesCount = article.likes?.length ?? 0;
+      dto.commentCount = article.commentCount;
+      dto.likesCount = article.likeCount;
       dto.thumbnailKey =
         article.attachedImages?.[0]?.key
         ?? article.referencedPhotos?.[0]?.image?.key
@@ -131,8 +131,6 @@ export class ArticleService {
       const articlesMap = await this.articleRepository
         .createQueryBuilder('article')
         .leftJoinAndSelect('article.author', 'author')
-        .leftJoinAndSelect('article.comments', 'comments')
-        .leftJoinAndSelect('article.likes', 'likes')
         .leftJoinAndSelect('article.attachedImages', 'attachedImages')
         .leftJoinAndSelect('article.referencedPhotos', 'referencedPhotos')
         .where('article.board = :boardId AND article.id IN (:...ids)', { boardId, ids: articleIds })
@@ -144,8 +142,8 @@ export class ArticleService {
 
     const items = articles.map((article) => {
       const dto = plainToInstance(ArticleListItemResponseDto, article, { excludeExtraneousValues: true });
-      dto.commentCount = article.comments?.length ?? 0;
-      dto.likesCount = article.likes?.length ?? 0;
+      dto.commentCount = article.commentCount;
+      dto.likesCount = article.likeCount;
       dto.thumbnailKey =
         article.attachedImages?.[0]?.key
         ?? article.referencedPhotos?.[0]?.image?.key
@@ -165,7 +163,6 @@ export class ArticleService {
         'author',
         'comments', 'comments.parent', 'comments.author',
         'comments.replies', 'comments.replies.author',
-        'likes',
         'referencedPhotos', 'referencedPhotos.image',
         'attachedImages',
       ],
@@ -181,7 +178,7 @@ export class ArticleService {
     article.comments = article.comments?.filter((c) => !c.parent) ?? [];
 
     const dto = plainToInstance(ArticleResponseDto, article, { excludeExtraneousValues: true });
-    dto.likesCount = article.likes?.length ?? 0;
+    dto.likesCount = article.likeCount;
     return dto;
   }
 
