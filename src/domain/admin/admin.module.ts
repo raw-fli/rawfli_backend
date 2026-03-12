@@ -8,6 +8,8 @@ import { AdminService } from 'src/domain/admin/admin.service';
 import { Admin } from 'src/domain/admin/entity/admin.entity';
 import { AdminLocalStrategy } from 'src/domain/admin/strategies/admin-local.strategy';
 import { AdminJwtStrategy } from 'src/domain/admin/strategies/admin-jwt.strategy';
+import { AdminGuard } from 'src/domain/admin/guards/admin.guard';
+import { AdminSignupGuard } from 'src/domain/admin/guards/admin-signup.guard';
 import { CamerasModule } from 'src/domain/camera/camera.module';
 import { LensesModule } from 'src/domain/lens/lens.module';
 
@@ -27,7 +29,7 @@ import { LensesModule } from 'src/domain/lens/lens.module';
     LensesModule,
   ],
   controllers: [AdminController],
-  providers: [AdminService, AdminLocalStrategy, AdminJwtStrategy],
+  providers: [AdminService, AdminLocalStrategy, AdminJwtStrategy, AdminGuard, AdminSignupGuard],
   exports: [AdminService],
 })
 export class AdminModule { }

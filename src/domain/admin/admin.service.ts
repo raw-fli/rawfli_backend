@@ -14,6 +14,11 @@ export class AdminService {
     private readonly jwtService: JwtService,
   ) { }
 
+  async hasAnyAdmin(): Promise<boolean> {
+    const count = await this.adminRepository.count();
+    return count > 0;
+  }
+
   async createAdmin(dto: CreateAdminDto): Promise<DecodedAdminToken> {
     const existing = await this.adminRepository.findOne({ where: { username: dto.username } });
     if (existing) {

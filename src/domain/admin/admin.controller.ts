@@ -3,6 +3,7 @@ import { ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiProperty, ApiTags, 
 import { AdminService } from 'src/domain/admin/admin.service';
 import { AdminGuard } from 'src/domain/admin/guards/admin.guard';
 import { AdminLocalGuard } from 'src/domain/admin/guards/admin-local.guard';
+import { AdminSignupGuard } from 'src/domain/admin/guards/admin-signup.guard';
 import { UserDecorator } from 'src/common/decorators/user.decorator';
 import { DecodedAdminToken } from 'src/domain/admin/entity/admin.entity';
 import { CreateAdminDto } from 'src/domain/admin/dto/create-admin.dto';
@@ -37,7 +38,7 @@ export class AdminController {
   @ApiOperation({ summary: '관리자 계정 생성' })
   @ApiCreatedResponse({ type: ApiResponse(AdminInfoDto) })
   @ApiBearerAuth()
-  @UseGuards(AdminGuard)
+  @UseGuards(AdminSignupGuard)
   @Post('signup')
   async createAdmin(
     @Body() dto: CreateAdminDto,
