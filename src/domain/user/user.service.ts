@@ -37,6 +37,7 @@ export class UsersService {
   async getUserInfo(userId: number): Promise<UserInfoResponseDto> {
     const user = await this.usersRepository.findOne({
       where: { id: userId },
+      order: { articles: { id: 'DESC' }},
       relations: [
         'articles', 'articles.board',
         'articles.attachedImages',
