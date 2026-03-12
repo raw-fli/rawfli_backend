@@ -41,6 +41,12 @@ export class Article extends CommonColumns {
   @OneToMany('Comment', (comment: Comment) => comment.article)
   comments!: Relation<Comment[]>;
 
+  @Column({ default: 0 })
+  commentCount!: number;
+
+  @Column({ default: 0 })
+  likeCount!: number;
+
   @ManyToMany(() => Photo, (photo) => photo.referencedInArticles)
   @JoinTable({ name: 'article_referenced_photos' })
   referencedPhotos!: Photo[];

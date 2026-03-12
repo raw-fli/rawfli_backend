@@ -236,10 +236,12 @@ export class ArticleService {
 
     if (alreadyLiked) {
       article.likes = article.likes.filter((u) => u.id !== user.id);
+      article.likeCount = Math.max(0, article.likeCount - 1);
     } else {
       const userEntity = await this.userRepository.findOne({ where: { id: user.id } });
       if (userEntity) {
         article.likes.push(userEntity);
+        article.likeCount += 1;
       }
     }
 
@@ -276,6 +278,10 @@ export class ArticleService {
     }
 
     const saved = await this.commentRepository.save(comment);
+
+    article.commentCount += 1;
+    await this.articleRepository.save(article);
+
     return plainToInstance(CommentResponseDto, saved, { excludeExtraneousValues: true });
   }
 
@@ -305,6 +311,7 @@ export class ArticleService {
     await this.dataSource.transaction(async (manager) => {
       await manager.save(DeletedComment, deletedComment);
       await manager.softRemove(comment);
+      await manager.decrement(Article, { id: comment.article.id, board: comment.article.board as any }, 'commentCount', 1);
     });
 
     return plainToInstance(DeletedCommentResponseDto, deletedComment, { excludeExtraneousValues: true });
