@@ -7,7 +7,7 @@ import { CreateUserDto } from 'src/domain/user/dto/create-user.dto';
 import { LocalGuard } from './guards/local.guard';
 import { UserDecorator } from 'src/common/decorators/user.decorator';
 import { LoginUserDto } from 'src/domain/user/dto/login-user.dto';
-import { ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiProperty, ApiTags } from '@nestjs/swagger';
+import { ApiCreatedResponse, ApiOperation, ApiProperty, ApiTags } from '@nestjs/swagger';
 import { ApiResponse } from 'src/common/dtos/api-response.dto';
 import { UserResponseDto } from 'src/domain/user/dto/user.response.dto';
 
