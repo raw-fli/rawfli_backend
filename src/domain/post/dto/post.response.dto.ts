@@ -1,5 +1,7 @@
 import { Expose, Type } from 'class-transformer';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { UserResponseDto } from 'src/domain/user/dto/user.response.dto';
+import { PhotoResponseDto } from 'src/common/dtos/photo.response.dto';
 
 export class PostResponseDto {
   @Expose()
@@ -14,6 +16,11 @@ export class PostResponseDto {
   @Expose()
   @Type(() => UserResponseDto)
   author: UserResponseDto;
+
+  @Expose()
+  @ApiPropertyOptional({ type: () => [PhotoResponseDto] })
+  @Type(() => PhotoResponseDto)
+  photos: PhotoResponseDto[];
 
   @Expose()
   createdAt: Date;

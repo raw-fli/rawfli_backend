@@ -11,6 +11,8 @@ import { Photo } from 'src/common/entities/photo.entity';
 import { Post } from 'src/domain/post/entity/post.entity';
 import { DeletedPost } from 'src/common/entities/deleted-post.entity';
 import { DecodedUserToken, User } from 'src/domain/user/entity/user.entity';
+import { CamerasService } from 'src/domain/camera/camera.service';
+import { LensesService } from 'src/domain/lens/lens.service';
 import { DataSource, In, Repository } from 'typeorm';
 
 @Injectable()
@@ -18,6 +20,8 @@ export class PostsService {
   constructor(
     @InjectRepository(Post) private readonly postRepository: Repository<Post>,
     @InjectRepository(Board) private readonly boardRepository: Repository<Board>,
+    private readonly camerasService: CamerasService,
+    private readonly lensesService: LensesService,
     private readonly dataSource: DataSource,
   ) { }
 
@@ -49,14 +53,38 @@ export class PostsService {
 
       if (dto.imageIds && dto.imageIds.length > 0) {
         const images = await manager.findBy(Image, { id: In(dto.imageIds) });
-        const photos = dto.imageIds.map((imageId, index) => {
-          const photo = new Photo();
-          photo.image = images.find((img) => img.id === imageId)!;
-          photo.post = savedPost;
-          photo.author = { id: user.id } as User;
-          photo.description = dto.photoDescriptions?.[index] ?? undefined;
-          return photo;
-        });
+        const photos = await Promise.all(
+          dto.imageIds.map(async (imageId, index) => {
+            const image = images.find((img) => img.id === imageId)!;
+            const photo = new Photo();
+            photo.image = image;
+            photo.post = savedPost;
+            photo.author = { id: user.id } as User;
+            photo.description = dto.photoDescriptions?.[index] ?? undefined;
+
+            if (image.exifData) {
+              const exif = image.exifData;
+              photo.iso = exif.iso ?? null;
+              photo.aperture = exif.aperture ?? null;
+              photo.shutterSpeedDisplay = exif.shutterSpeedDisplay ?? null;
+              photo.shutterSpeedValue = exif.shutterSpeedValue ?? null;
+
+              if (exif.cameraModel) {
+                photo.camera = await this.camerasService.findOrCreateByExif(
+                  exif.cameraModel, exif.cameraMake, manager,
+                );
+              }
+
+              if (exif.lensModel) {
+                photo.lens = await this.lensesService.findOrCreateByExif(
+                  exif.lensModel, exif.lensMake, manager,
+                );
+              }
+            }
+
+            return photo;
+          }),
+        );
         await manager.save(Photo, photos);
       }
 
@@ -87,14 +115,20 @@ export class PostsService {
 
     const post = await this.postRepository.findOne({
       where: { id: postId, board: boardId as any },
-      relations: ['author', 'photos', 'photos.image'],
+      relations: ['author', 'photos', 'photos.image', 'photos.camera', 'photos.lens'],
     });
 
     if (!post) {
       throw new NotFoundException(createError(ErrorCode.POST_NOT_FOUND));
     }
 
-    return plainToInstance(PostResponseDto, post, { excludeExtraneousValues: true });
+    return plainToInstance(PostResponseDto, {
+      ...post,
+      photos: post.photos?.map((photo) => ({
+        ...photo,
+        imageKey: photo.image?.key,
+      })),
+    }, { excludeExtraneousValues: true });
   }
 
   async deletePost(user: DecodedUserToken, boardId: number, postId: number): Promise<DeletedPostResponseDto> {

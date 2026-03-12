@@ -23,6 +23,14 @@ import { ArticleModule } from './domain/article/article.module';
 import { DeletedComment } from './common/entities/deleted-comment.entity';
 import { Follow } from './domain/user/entity/follow.entity';
 import { MeModule } from './domain/me/me.module';
+import { CamerasModule } from './domain/camera/camera.module';
+import { LensesModule } from './domain/lens/lens.module';
+import { AdminModule } from './domain/admin/admin.module';
+import { Camera } from './domain/camera/entity/camera.entity';
+import { CameraAlias } from './domain/camera/entity/camera-alias.entity';
+import { Lens } from './domain/lens/entity/lens.entity';
+import { LensAlias } from './domain/lens/entity/lens-alias.entity';
+import { Admin } from './domain/admin/entity/admin.entity';
 
 @Module({
   imports: [
@@ -40,7 +48,7 @@ import { MeModule } from './domain/me/me.module';
         username: configService.get('POSTGRES_USER'),
         password: configService.get('POSTGRES_PASSWORD'),
         database: configService.get('POSTGRES_DATABASE'),
-        entities: [User, Post, Article, Comment, Photo, Image, Board, DeletedPost, DeletedComment, Follow],
+        entities: [User, Post, Article, Comment, Photo, Image, Board, DeletedPost, DeletedComment, Follow, Camera, CameraAlias, Lens, LensAlias, Admin],
         synchronize: true,
         // extra: {
         //   ssl: true,
@@ -54,6 +62,9 @@ import { MeModule } from './domain/me/me.module';
     PostsModule,
     ArticleModule,
     MeModule,
+    CamerasModule,
+    LensesModule,
+    AdminModule,
   ],
   controllers: [],
   providers: [

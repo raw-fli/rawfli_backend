@@ -4,6 +4,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { CreatedAtColumn } from 'src/common/entities/created-at.column';
 import { User } from 'src/domain/user/entity/user.entity';
 import { Photo } from 'src/common/entities/photo.entity';
+import { ExifData } from 'src/common/utils/exif.utils';
 
 @Entity()
 export class Image extends CreatedAtColumn {
@@ -21,6 +22,10 @@ export class Image extends CreatedAtColumn {
   @ApiProperty({ example: 'uploads/image.png' })
   @Column({ type: 'text', unique: true })
   key!: string;
+
+  @ApiProperty({ type: 'object', nullable: true, required: false })
+  @Column({ type: 'jsonb', nullable: true })
+  exifData!: ExifData | null;
 
   @ManyToOne(() => User, (user) => user.images)
   uploader!: User;

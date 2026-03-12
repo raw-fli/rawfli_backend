@@ -4,6 +4,7 @@ import { ConfigService } from "@nestjs/config";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Image } from "src/domain/aws/entity/image.entity";
 import { DecodedUserToken, User } from "src/domain/user/entity/user.entity";
+import { parseExifFromBuffer } from "src/common/utils/exif.utils";
 import { Repository } from "typeorm";
 
 @Injectable()
@@ -42,9 +43,11 @@ export class AwsService {
       });
 
       await this.s3Client.send(command);
+      const exifData = await parseExifFromBuffer(file.buffer);
       const newImage = new Image();
       newImage.key = key;
       newImage.uploader = { id: user.id } as User;
+      newImage.exifData = exifData;
       return await this.imageRepository.save(newImage);
     });
 
