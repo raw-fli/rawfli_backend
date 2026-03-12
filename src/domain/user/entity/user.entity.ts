@@ -32,6 +32,9 @@ export class User extends CommonColumns {
   @Column({ type: 'text', nullable: true })
   profileImageKey!: string | null;
 
+  @Column({ type: 'text', nullable: true })
+  bio!: string | null;
+
   @OneToMany('Article', (article: Article) => article.author)
   articles!: Relation<Article[]>;
 

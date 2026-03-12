@@ -12,6 +12,7 @@ export enum ErrorCode {
   COMMENT_NOT_FOUND = 4016,
   BOARD_TYPE_MISMATCH = 4017,
   POST_NOT_FOUND = 4018,
+  WRONG_PASSWORD = 4019,
 }
 
 export const ErrorMessage: Record<ErrorCode, string> = {
@@ -28,6 +29,7 @@ export const ErrorMessage: Record<ErrorCode, string> = {
   [ErrorCode.COMMENT_NOT_FOUND]: '댓글을 찾지 못했어요.',
   [ErrorCode.BOARD_TYPE_MISMATCH]: '이 게시판에서 지원하지 않는 요청이에요.',
   [ErrorCode.POST_NOT_FOUND]: '포스트를 찾지 못했어요.',
+  [ErrorCode.WRONG_PASSWORD]: '현재 비밀번호가 올바르지 않습니다.',
 };
 
 export function createError(code: ErrorCode) {

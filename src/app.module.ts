@@ -22,6 +22,7 @@ import { Article } from './domain/article/entity/article.entity';
 import { ArticleModule } from './domain/article/article.module';
 import { DeletedComment } from './common/entities/deleted-comment.entity';
 import { Follow } from './domain/user/entity/follow.entity';
+import { MeModule } from './domain/me/me.module';
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { Follow } from './domain/user/entity/follow.entity';
     BoardsModule,
     PostsModule,
     ArticleModule,
+    MeModule,
   ],
   controllers: [],
   providers: [
