@@ -274,7 +274,12 @@ export class ArticleService {
       comment.parent = parentComment;
     }
 
-    const saved = await this.commentRepository.save(comment);
+    await this.commentRepository.save(comment);
+
+    const saved = await this.commentRepository.findOne({
+      where: { id: comment.id },
+      relations: ['author'],
+    });
 
     article.commentCount += 1;
     await this.articleRepository.save(article);
