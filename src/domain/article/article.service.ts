@@ -106,7 +106,7 @@ export class ArticleService {
     const GRAVITY = 1.8;
     const hnScore = `(
       (SELECT COUNT(*) FROM users_liked_articles ula WHERE ula."articleId" = article.id) * 2.0
-      + (SELECT COUNT(*) FROM comment c WHERE c."articleId" = article.id AND c."deletedAt" IS NULL)
+      + (SELECT COUNT(DISTINCT c."authorId") FROM comment c WHERE c."articleId" = article.id AND c."deletedAt" IS NULL)
       + SQRT(GREATEST(article.views, 1))
     ) / POW(
       EXTRACT(EPOCH FROM (NOW() - article."createdAt")) / 3600.0 + 2.0,
