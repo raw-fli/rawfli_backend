@@ -3,6 +3,7 @@ import { UsersService } from './user.service';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UserInfoResponseDto } from './dto/user-info.response.dto';
 import { createResponseForm, Try } from 'src/common/types';
+import { ApiResponse } from 'src/common/dtos/api-response.dto';
 
 @ApiTags('users')
 @Controller('api/v1/users')
@@ -10,7 +11,7 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) { }
 
   @ApiOperation({ summary: '유저 조회' })
-  @ApiOkResponse({ type: UserInfoResponseDto })
+  @ApiOkResponse({ type: ApiResponse(UserInfoResponseDto) })
   @Get(':userId')
   async getUser(
     @Param('userId', ParseIntPipe) userId: number,
