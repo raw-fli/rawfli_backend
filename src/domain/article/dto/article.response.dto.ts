@@ -91,6 +91,12 @@ export class ArticleListItemResponseDto {
   thumbnailKey: string | null;
 
   @Expose()
+  boardId: number;
+
+  @Expose()
+  boardName: string;
+
+  @Expose()
   createdAt: Date;
 
   constructor(partial: Partial<ArticleListItemResponseDto>) {

@@ -38,7 +38,8 @@ export class UsersService {
     const user = await this.usersRepository.findOne({
       where: { id: userId },
       relations: [
-        'articles', 'articles.attachedImages',
+        'articles', 'articles.board',
+        'articles.attachedImages',
         'articles.referencedPhotos', 'articles.referencedPhotos.image',
         'followers', 'followings',
       ],
@@ -57,6 +58,8 @@ export class UsersService {
         article.attachedImages?.[0]?.key
         ?? article.referencedPhotos?.[0]?.image?.key
         ?? null;
+      articleDto.boardId = (article.board as any).id;
+      articleDto.boardName = (article.board as any).name;
       return articleDto;
     }) ?? [];
     return dto;
