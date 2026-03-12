@@ -32,6 +32,10 @@ export class UserInfoResponseDto {
   @Expose()
   createdAt: Date;
 
+  @ApiProperty({ nullable: true })
+  @Expose()
+  bio?: string | null;
+
   constructor(partial: Partial<UserInfoResponseDto>) {
     Object.assign(this, partial);
   }
