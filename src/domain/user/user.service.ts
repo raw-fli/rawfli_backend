@@ -37,7 +37,11 @@ export class UsersService {
   async getUserInfo(userId: number): Promise<UserInfoResponseDto> {
     const user = await this.usersRepository.findOne({
       where: { id: userId },
-      relations: ['articles', 'followers', 'followings'],
+      relations: [
+        'articles', 'articles.attachedImages',
+        'articles.referencedPhotos', 'articles.referencedPhotos.image',
+        'followers', 'followings',
+      ],
     });
 
     if (!user) {
@@ -47,6 +51,14 @@ export class UsersService {
     const dto = plainToInstance(UserInfoResponseDto, user, { excludeExtraneousValues: true });
     dto.followerCount = user.followers?.length ?? 0;
     dto.followingCount = user.followings?.length ?? 0;
+    dto.articles = dto.articles?.map((articleDto, i) => {
+      const article = user.articles[i];
+      articleDto.thumbnailKey =
+        article.attachedImages?.[0]?.key
+        ?? article.referencedPhotos?.[0]?.image?.key
+        ?? null;
+      return articleDto;
+    }) ?? [];
     return dto;
   }
 
