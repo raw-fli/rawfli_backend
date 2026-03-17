@@ -24,13 +24,6 @@ export class AwsService {
     });
   }
 
-  async getImages() {
-    return await this.imageRepository.find({
-      relations: ['uploader'],
-      order: { createdAt: 'DESC' },
-    });
-  }
-
   async uploadImages(user: DecodedUserToken, files: Express.Multer.File[]) {
     const uploads = files.map(async (file) => {
       const originalName = Buffer.from(file.originalname, 'latin1').toString('utf8');

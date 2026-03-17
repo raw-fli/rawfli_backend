@@ -12,6 +12,9 @@ import { AdminGuard } from 'src/domain/admin/guards/admin.guard';
 import { AdminSignupGuard } from 'src/domain/admin/guards/admin-signup.guard';
 import { CamerasModule } from 'src/domain/camera/camera.module';
 import { LensesModule } from 'src/domain/lens/lens.module';
+import { Image } from 'src/domain/aws/entity/image.entity';
+import { DeletedPost } from 'src/common/entities/deleted-post.entity';
+import { DeletedComment } from 'src/common/entities/deleted-comment.entity';
 
 @Module({
   imports: [
@@ -24,7 +27,7 @@ import { LensesModule } from 'src/domain/lens/lens.module';
         signOptions: { algorithm: 'HS256', expiresIn: '1h' },
       }),
     }),
-    TypeOrmModule.forFeature([Admin]),
+    TypeOrmModule.forFeature([Admin, Image, DeletedPost, DeletedComment]),
     CamerasModule,
     LensesModule,
   ],

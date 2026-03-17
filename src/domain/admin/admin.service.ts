@@ -1,16 +1,31 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
+import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { Admin, DecodedAdminToken } from 'src/domain/admin/entity/admin.entity';
 import { CreateAdminDto } from 'src/domain/admin/dto/create-admin.dto';
 import { createError, ErrorCode } from 'src/common/exception/error';
+import { Image } from 'src/domain/aws/entity/image.entity';
+import { DeletedPost } from 'src/common/entities/deleted-post.entity';
+import { DeletedComment } from 'src/common/entities/deleted-comment.entity';
+import {
+  AdminDeletedCommentListResponseDto,
+  AdminDeletedPostListResponseDto,
+  AdminImageListResponseDto,
+  AdminImageResponseDto,
+} from 'src/domain/admin/dto/admin-moderation.response.dto';
+import { DeletedPostResponseDto } from 'src/domain/post/dto/deleted-post.response.dto';
+import { DeletedCommentResponseDto } from 'src/common/dtos/deleted-comment.response.dto';
 
 @Injectable()
 export class AdminService {
   constructor(
     @InjectRepository(Admin) private readonly adminRepository: Repository<Admin>,
+    @InjectRepository(Image) private readonly imageRepository: Repository<Image>,
+    @InjectRepository(DeletedPost) private readonly deletedPostRepository: Repository<DeletedPost>,
+    @InjectRepository(DeletedComment) private readonly deletedCommentRepository: Repository<DeletedComment>,
     private readonly jwtService: JwtService,
   ) { }
 
@@ -43,5 +58,71 @@ export class AdminService {
 
   adminLogin(admin: DecodedAdminToken) {
     return this.jwtService.sign({ ...admin });
+  }
+
+  async getImages(page: number = 1, limit: number = 20): Promise<AdminImageListResponseDto> {
+    const [images, total] = await this.imageRepository.findAndCount({
+      relations: ['uploader'],
+      order: { createdAt: 'DESC' },
+      skip: (page - 1) * limit,
+      take: limit,
+    });
+
+    const items = images.map((image) =>
+      plainToInstance(
+        AdminImageResponseDto,
+        {
+          id: image.id,
+          key: image.key,
+          exifData: image.exifData,
+          uploaderId: image.uploader?.id,
+          uploaderUsername: image.uploader?.username,
+          createdAt: image.createdAt,
+        },
+        { excludeExtraneousValues: true },
+      ),
+    );
+
+    return plainToInstance(
+      AdminImageListResponseDto,
+      { images: items, total },
+      { excludeExtraneousValues: true },
+    );
+  }
+
+  async getDeletedPosts(page: number = 1, limit: number = 20): Promise<AdminDeletedPostListResponseDto> {
+    const [posts, total] = await this.deletedPostRepository.findAndCount({
+      order: { deletedAt: 'DESC' },
+      skip: (page - 1) * limit,
+      take: limit,
+    });
+
+    const items = posts.map((post) =>
+      plainToInstance(DeletedPostResponseDto, post, { excludeExtraneousValues: true }),
+    );
+
+    return plainToInstance(
+      AdminDeletedPostListResponseDto,
+      { posts: items, total },
+      { excludeExtraneousValues: true },
+    );
+  }
+
+  async getDeletedComments(page: number = 1, limit: number = 20): Promise<AdminDeletedCommentListResponseDto> {
+    const [comments, total] = await this.deletedCommentRepository.findAndCount({
+      order: { deletedAt: 'DESC' },
+      skip: (page - 1) * limit,
+      take: limit,
+    });
+
+    const items = comments.map((comment) =>
+      plainToInstance(DeletedCommentResponseDto, comment, { excludeExtraneousValues: true }),
+    );
+
+    return plainToInstance(
+      AdminDeletedCommentListResponseDto,
+      { comments: items, total },
+      { excludeExtraneousValues: true },
+    );
   }
 }

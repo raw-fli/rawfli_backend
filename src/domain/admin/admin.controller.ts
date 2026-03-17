@@ -15,6 +15,11 @@ import { LensListResponseDto, LensResponseDto } from 'src/domain/lens/dto/lens.r
 import { CamerasService } from 'src/domain/camera/camera.service';
 import { LensesService } from 'src/domain/lens/lens.service';
 import { createResponseForm, Try } from 'src/common/types';
+import {
+  AdminDeletedCommentListResponseDto,
+  AdminDeletedPostListResponseDto,
+  AdminImageListResponseDto,
+} from 'src/domain/admin/dto/admin-moderation.response.dto';
 
 class AdminTokenDto {
   @ApiProperty({ type: String, description: '관리자 JWT 토큰' })
@@ -112,6 +117,54 @@ export class AdminController {
     @Body() dto: MergeEquipmentDto,
   ): Promise<Try<LensResponseDto>> {
     const result = await this.lensesService.mergeLenses(dto.targetId, dto.sourceIds);
+    return createResponseForm(result);
+  }
+
+  @ApiOperation({ summary: '업로드 이미지 목록 조회' })
+  @ApiOkResponse({ type: ApiResponse(AdminImageListResponseDto) })
+  @ApiBearerAuth()
+  @UseGuards(AdminGuard)
+  @Get('images')
+  async getImages(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ): Promise<Try<AdminImageListResponseDto>> {
+    const result = await this.adminService.getImages(
+      page ? parseInt(page, 10) : 1,
+      limit ? parseInt(limit, 10) : 20,
+    );
+    return createResponseForm(result);
+  }
+
+  @ApiOperation({ summary: '삭제된 게시글 목록 조회' })
+  @ApiOkResponse({ type: ApiResponse(AdminDeletedPostListResponseDto) })
+  @ApiBearerAuth()
+  @UseGuards(AdminGuard)
+  @Get('deleted-posts')
+  async getDeletedPosts(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ): Promise<Try<AdminDeletedPostListResponseDto>> {
+    const result = await this.adminService.getDeletedPosts(
+      page ? parseInt(page, 10) : 1,
+      limit ? parseInt(limit, 10) : 20,
+    );
+    return createResponseForm(result);
+  }
+
+  @ApiOperation({ summary: '삭제된 댓글 목록 조회' })
+  @ApiOkResponse({ type: ApiResponse(AdminDeletedCommentListResponseDto) })
+  @ApiBearerAuth()
+  @UseGuards(AdminGuard)
+  @Get('deleted-comments')
+  async getDeletedComments(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ): Promise<Try<AdminDeletedCommentListResponseDto>> {
+    const result = await this.adminService.getDeletedComments(
+      page ? parseInt(page, 10) : 1,
+      limit ? parseInt(limit, 10) : 20,
+    );
     return createResponseForm(result);
   }
 }
