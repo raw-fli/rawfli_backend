@@ -7,7 +7,7 @@ import { Camera } from 'src/domain/camera/entity/camera.entity';
 import { CameraAlias } from 'src/domain/camera/entity/camera-alias.entity';
 import { CameraListResponseDto, CameraResponseDto } from 'src/domain/camera/dto/camera.response.dto';
 import { Photo } from 'src/common/entities/photo.entity';
-import { DataSource, EntityManager, Repository } from 'typeorm';
+import { DataSource, EntityManager, In, Repository } from 'typeorm';
 
 @Injectable()
 export class CamerasService {
@@ -111,6 +111,17 @@ export class CamerasService {
       return plainToInstance(CameraResponseDto, target, { excludeExtraneousValues: true });
     }
 
+    const sources = await this.cameraRepository.find({
+      where: { id: In(filteredSourceIds) },
+      relations: ['aliases'],
+    });
+
+    if (sources.length !== filteredSourceIds.length) {
+      throw new NotFoundException(createError(ErrorCode.CAMERA_NOT_FOUND));
+    }
+
+    const preservedAliasNames = this.collectPreservedAliasNames(sources);
+
     return await this.dataSource.transaction(async (manager) => {
       await manager
         .createQueryBuilder()
@@ -118,6 +129,8 @@ export class CamerasService {
         .set({ camera: target })
         .where('cameraId IN (:...sourceIds)', { sourceIds: filteredSourceIds })
         .execute();
+
+      await this.upsertAliasesToTarget(manager, target, preservedAliasNames);
 
       await manager
         .createQueryBuilder()
@@ -138,5 +151,52 @@ export class CamerasService {
 
       return plainToInstance(CameraResponseDto, merged, { excludeExtraneousValues: true });
     });
+  }
+
+  private collectPreservedAliasNames(sources: Camera[]): string[] {
+    const names = new Set<string>();
+
+    for (const source of sources) {
+      const modelName = sanitizeExifString(source.modelName);
+      names.add(modelName);
+
+      if (source.brand) {
+        names.add(sanitizeExifString(`${source.brand} ${source.modelName}`));
+      }
+
+      for (const alias of source.aliases ?? []) {
+        names.add(sanitizeExifString(alias.rawExifName));
+      }
+    }
+
+    return [...names];
+  }
+
+  private async upsertAliasesToTarget(
+    manager: EntityManager,
+    target: Camera,
+    aliasNames: string[],
+  ): Promise<void> {
+    const aliasRepo = manager.getRepository(CameraAlias);
+
+    for (const rawExifName of aliasNames) {
+      const exists = await aliasRepo.findOne({
+        where: { rawExifName },
+        relations: ['camera'],
+      });
+
+      if (!exists) {
+        const alias = new CameraAlias();
+        alias.rawExifName = rawExifName;
+        alias.camera = target;
+        await aliasRepo.save(alias);
+        continue;
+      }
+
+      if (exists.camera.id !== target.id) {
+        exists.camera = target;
+        await aliasRepo.save(exists);
+      }
+    }
   }
 }

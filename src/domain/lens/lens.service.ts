@@ -7,7 +7,7 @@ import { Lens } from 'src/domain/lens/entity/lens.entity';
 import { LensAlias } from 'src/domain/lens/entity/lens-alias.entity';
 import { LensListResponseDto, LensResponseDto } from 'src/domain/lens/dto/lens.response.dto';
 import { Photo } from 'src/common/entities/photo.entity';
-import { DataSource, EntityManager, Repository } from 'typeorm';
+import { DataSource, EntityManager, In, Repository } from 'typeorm';
 
 @Injectable()
 export class LensesService {
@@ -111,6 +111,17 @@ export class LensesService {
       return plainToInstance(LensResponseDto, target, { excludeExtraneousValues: true });
     }
 
+    const sources = await this.lensRepository.find({
+      where: { id: In(filteredSourceIds) },
+      relations: ['aliases'],
+    });
+
+    if (sources.length !== filteredSourceIds.length) {
+      throw new NotFoundException(createError(ErrorCode.LENS_NOT_FOUND));
+    }
+
+    const preservedAliasNames = this.collectPreservedAliasNames(sources);
+
     return await this.dataSource.transaction(async (manager) => {
       await manager
         .createQueryBuilder()
@@ -118,6 +129,8 @@ export class LensesService {
         .set({ lens: target })
         .where('lensId IN (:...sourceIds)', { sourceIds: filteredSourceIds })
         .execute();
+
+      await this.upsertAliasesToTarget(manager, target, preservedAliasNames);
 
       await manager
         .createQueryBuilder()
@@ -138,5 +151,52 @@ export class LensesService {
 
       return plainToInstance(LensResponseDto, merged, { excludeExtraneousValues: true });
     });
+  }
+
+  private collectPreservedAliasNames(sources: Lens[]): string[] {
+    const names = new Set<string>();
+
+    for (const source of sources) {
+      const modelName = sanitizeExifString(source.modelName);
+      names.add(modelName);
+
+      if (source.brand) {
+        names.add(sanitizeExifString(`${source.brand} ${source.modelName}`));
+      }
+
+      for (const alias of source.aliases ?? []) {
+        names.add(sanitizeExifString(alias.rawExifName));
+      }
+    }
+
+    return [...names];
+  }
+
+  private async upsertAliasesToTarget(
+    manager: EntityManager,
+    target: Lens,
+    aliasNames: string[],
+  ): Promise<void> {
+    const aliasRepo = manager.getRepository(LensAlias);
+
+    for (const rawExifName of aliasNames) {
+      const exists = await aliasRepo.findOne({
+        where: { rawExifName },
+        relations: ['lens'],
+      });
+
+      if (!exists) {
+        const alias = new LensAlias();
+        alias.rawExifName = rawExifName;
+        alias.lens = target;
+        await aliasRepo.save(alias);
+        continue;
+      }
+
+      if (exists.lens.id !== target.id) {
+        exists.lens = target;
+        await aliasRepo.save(exists);
+      }
+    }
   }
 }
