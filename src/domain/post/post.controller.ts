@@ -22,6 +22,7 @@ import { ApiResponse } from 'src/common/dtos/api-response.dto';
 import { CreateCommentDto } from 'src/common/dtos/create-comment.dto';
 import { CommentResponseDto } from 'src/common/dtos/comment.response.dto';
 import { DeletedCommentResponseDto } from 'src/common/dtos/deleted-comment.response.dto';
+import { PostQueryDto } from 'src/domain/post/dto/post-query.dto';
 
 @ApiTags('posts')
 @Controller('api/v1/boards/:boardId/posts')
@@ -33,13 +34,27 @@ export class PostsController {
   @Get()
   async getPosts(
     @Param('boardId', ParseIntPipe) boardId: number,
-    @Query('page') page?: string,
-    @Query('limit') limit?: string,
+    @Query() query: PostQueryDto,
   ): Promise<Try<PostListResponseDto>> {
     const result = await this.postsService.getPosts(
       boardId,
-      page ? parseInt(page, 10) : 1,
-      limit ? parseInt(limit, 10) : 20,
+      query.page,
+      query.limit,
+    );
+    return createResponseForm(result);
+  }
+
+  @ApiOperation({ summary: '인기 포스트 목록 조회' })
+  @ApiOkResponse({ type: ApiResponse(PostListResponseDto) })
+  @Get('popular')
+  async getPopularPosts(
+    @Param('boardId', ParseIntPipe) boardId: number,
+    @Query() query: PostQueryDto,
+  ): Promise<Try<PostListResponseDto>> {
+    const result = await this.postsService.getPopularPosts(
+      boardId,
+      query.page,
+      query.limit,
     );
     return createResponseForm(result);
   }

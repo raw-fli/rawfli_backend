@@ -122,6 +122,63 @@ export class PostsService {
     return plainToInstance(PostListResponseDto, { posts: items, total }, { excludeExtraneousValues: true });
   }
 
+  async getPopularPosts(boardId: number, page: number = 1, limit: number = 20): Promise<PostListResponseDto> {
+    await this.validateGalleryBoard(boardId);
+
+    /**
+     * Score = (total_photo_comments * 2 + unique_commenters + sqrt(photo_count + 1)) / (age_hours + 2)^gravity
+     */
+    const GRAVITY = 1.8;
+    const hnScore = `(
+      COALESCE((SELECT SUM(p."commentCount") FROM photo p WHERE p."postId" = post.id AND p."postBoardId" = post."boardId"), 0) * 2.0
+      + COALESCE((
+        SELECT COUNT(DISTINCT c."authorId")
+        FROM comment c
+        INNER JOIN photo p ON c."photoId" = p.id
+        WHERE p."postId" = post.id
+          AND p."postBoardId" = post."boardId"
+          AND c."deletedAt" IS NULL
+      ), 0)
+      + SQRT(
+        COALESCE((SELECT COUNT(*) FROM photo p2 WHERE p2."postId" = post.id AND p2."postBoardId" = post."boardId"), 0) + 1
+      )
+    ) / POW(
+      EXTRACT(EPOCH FROM (NOW() - post."createdAt")) / 3600.0 + 2.0,
+      ${GRAVITY}
+    )`;
+
+    const total = await this.postRepository.count({ where: { board: boardId as any } });
+
+    const ranked = await this.postRepository
+      .createQueryBuilder('post')
+      .select(['post.id'])
+      .where('post.board = :boardId', { boardId })
+      .orderBy(hnScore, 'DESC')
+      .skip((page - 1) * limit)
+      .take(limit)
+      .getRawMany<{ post_id: number }>();
+
+    const postIds = ranked.map((r) => r.post_id);
+
+    let posts: Post[] = [];
+    if (postIds.length > 0) {
+      const postsMap = await this.postRepository
+        .createQueryBuilder('post')
+        .leftJoinAndSelect('post.author', 'author')
+        .where('post.board = :boardId AND post.id IN (:...ids)', { boardId, ids: postIds })
+        .getMany();
+
+      const byId = new Map(postsMap.map((post) => [post.id, post]));
+      posts = postIds.map((id) => byId.get(id)).filter((post): post is Post => !!post);
+    }
+
+    const items = posts.map((post) =>
+      plainToInstance(PostListItemResponseDto, post, { excludeExtraneousValues: true }),
+    );
+
+    return plainToInstance(PostListResponseDto, { posts: items, total }, { excludeExtraneousValues: true });
+  }
+
   async getPost(boardId: number, postId: number): Promise<PostResponseDto> {
     await this.validateGalleryBoard(boardId);
 
