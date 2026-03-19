@@ -53,41 +53,43 @@ export class PostsService {
 
       if (dto.imageIds && dto.imageIds.length > 0) {
         const images = await manager.findBy(Image, { id: In(dto.imageIds) });
-        const photos = await Promise.all(
-          dto.imageIds.map(async (imageId, index) => {
-            const image = images.find((img) => img.id === imageId);
-            if (!image) return null;
+        const photos: Photo[] = [];
 
-            const photo = new Photo();
-            photo.image = image;
-            photo.post = savedPost;
-            photo.author = { id: user.id } as User;
-            photo.description = dto.photoDescriptions?.[index] ?? undefined;
+        for (let index = 0; index < dto.imageIds.length; index += 1) {
+          const imageId = dto.imageIds[index];
+          const image = images.find((img) => img.id === imageId);
+          if (!image) continue;
 
-            if (image.exifData) {
-              const exif = image.exifData;
-              photo.iso = exif.iso ?? null;
-              photo.aperture = exif.aperture ?? null;
-              photo.shutterSpeedDisplay = exif.shutterSpeedDisplay ?? null;
-              photo.shutterSpeedValue = exif.shutterSpeedValue ?? null;
-              photo.focalLength = exif.focalLength ?? null;
+          const photo = new Photo();
+          photo.image = image;
+          photo.post = savedPost;
+          photo.author = { id: user.id } as User;
+          photo.description = dto.photoDescriptions?.[index] ?? undefined;
 
-              if (exif.cameraModel) {
-                photo.camera = await this.camerasService.findOrCreateByExif(
-                  exif.cameraModel, exif.cameraMake, manager,
-                );
-              }
+          if (image.exifData) {
+            const exif = image.exifData;
+            photo.iso = exif.iso ?? null;
+            photo.aperture = exif.aperture ?? null;
+            photo.shutterSpeedDisplay = exif.shutterSpeedDisplay ?? null;
+            photo.shutterSpeedValue = exif.shutterSpeedValue ?? null;
+            photo.focalLength = exif.focalLength ?? null;
 
-              if (exif.lensModel) {
-                photo.lens = await this.lensesService.findOrCreateByExif(
-                  exif.lensModel, exif.lensMake, manager,
-                );
-              }
+            if (exif.cameraModel) {
+              photo.camera = await this.camerasService.findOrCreateByExif(
+                exif.cameraModel, exif.cameraMake, manager,
+              );
             }
 
-            return photo;
-          }),
-        );
+            if (exif.lensModel) {
+              photo.lens = await this.lensesService.findOrCreateByExif(
+                exif.lensModel, exif.lensMake, manager,
+              );
+            }
+          }
+
+          photos.push(photo);
+        }
+
         await manager.save(Photo, photos.filter(Boolean) as Photo[]);
       }
 

@@ -47,7 +47,11 @@ export class CamerasService {
       await aliasRepo.save(alias);
 
       return savedCamera;
-    } catch {
+    } catch (error) {
+      if (manager) {
+        throw error;
+      }
+
       const retried = await aliasRepo.findOne({
         where: { rawExifName: sanitized },
         relations: ['camera'],
