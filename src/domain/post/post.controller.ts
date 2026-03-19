@@ -25,7 +25,7 @@ import { ApiResponse } from 'src/common/dtos/api-response.dto';
 export class PostsController {
   constructor(private readonly postsService: PostsService) { }
 
-  @ApiOperation({ summary: '게시글 목록 조회' })
+  @ApiOperation({ summary: '포스트 목록 조회' })
   @ApiOkResponse({ type: ApiResponse(PostListResponseDto) })
   @Get()
   async getPosts(
@@ -41,7 +41,7 @@ export class PostsController {
     return createResponseForm(result);
   }
 
-  @ApiOperation({ summary: '게시글 작성' })
+  @ApiOperation({ summary: '포스트 작성' })
   @ApiCreatedResponse({ type: ApiResponse(PostResponseDto) })
   @UseGuards(JwtGuard)
   @Post()
@@ -54,7 +54,7 @@ export class PostsController {
     return createResponseForm(post);
   }
 
-  @ApiOperation({ summary: '게시글 조회' })
+  @ApiOperation({ summary: '포스트 조회' })
   @ApiOkResponse({ type: ApiResponse(PostResponseDto) })
   @Get(':postId')
   async getPost(
@@ -65,7 +65,7 @@ export class PostsController {
     return createResponseForm(post);
   }
 
-  @ApiOperation({ summary: '게시글 삭제' })
+  @ApiOperation({ summary: '포스트 삭제' })
   @ApiOkResponse({ type: ApiResponse(DeletedPostResponseDto) })
   @UseGuards(JwtGuard)
   @Delete(':postId')
