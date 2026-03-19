@@ -14,12 +14,19 @@ import { DecodedUserToken, User } from 'src/domain/user/entity/user.entity';
 import { CamerasService } from 'src/domain/camera/camera.service';
 import { LensesService } from 'src/domain/lens/lens.service';
 import { DataSource, In, Repository } from 'typeorm';
+import { Comment } from 'src/common/entities/comment.entity';
+import { CreateCommentDto } from 'src/common/dtos/create-comment.dto';
+import { CommentResponseDto } from 'src/common/dtos/comment.response.dto';
+import { DeletedCommentResponseDto } from 'src/common/dtos/deleted-comment.response.dto';
+import { DeletedComment } from 'src/common/entities/deleted-comment.entity';
 
 @Injectable()
 export class PostsService {
   constructor(
     @InjectRepository(Post) private readonly postRepository: Repository<Post>,
     @InjectRepository(Board) private readonly boardRepository: Repository<Board>,
+    @InjectRepository(Photo) private readonly photoRepository: Repository<Photo>,
+    @InjectRepository(Comment) private readonly commentRepository: Repository<Comment>,
     private readonly camerasService: CamerasService,
     private readonly lensesService: LensesService,
     private readonly dataSource: DataSource,
@@ -120,7 +127,7 @@ export class PostsService {
 
     const post = await this.postRepository.findOne({
       where: { id: postId, board: boardId as any },
-      relations: ['author', 'photos', 'photos.image', 'photos.camera', 'photos.lens'],
+      relations: ['author', 'photos', 'photos.image', 'photos.camera', 'photos.lens', 'photos.comments', 'photos.comments.author'],
     });
 
     if (!post) {
@@ -169,5 +176,87 @@ export class PostsService {
     });
 
     return plainToInstance(DeletedPostResponseDto, saved, { excludeExtraneousValues: true });
+  }
+
+  async createPhotoComment(
+    user: DecodedUserToken,
+    boardId: number,
+    postId: number,
+    photoId: string,
+    dto: CreateCommentDto,
+  ): Promise<CommentResponseDto> {
+    await this.validateGalleryBoard(boardId);
+
+    const photo = await this.photoRepository.findOne({
+      where: { id: photoId, post: { id: postId, board: boardId as any } },
+    });
+
+    if (!photo) {
+      throw new NotFoundException(createError(ErrorCode.PHOTO_NOT_FOUND));
+    }
+
+    const comment = new Comment();
+    comment.photo = photo;
+    comment.author = { id: user.id } as User;
+    comment.content = dto.content;
+
+    if (dto.parentId) {
+      const parentComment = await this.commentRepository.findOne({
+        where: { id: dto.parentId, photo: { id: photoId } },
+      });
+
+      if (!parentComment) {
+        throw new NotFoundException(createError(ErrorCode.COMMENT_TO_REPLY_NOT_FOUND));
+      }
+
+      comment.parent = parentComment;
+    }
+
+    await this.commentRepository.save(comment);
+
+    const saved = await this.commentRepository.findOne({
+      where: { id: comment.id },
+      relations: ['author'],
+    });
+
+    photo.commentCount += 1;
+    await this.photoRepository.save(photo);
+
+    return plainToInstance(CommentResponseDto, saved, { excludeExtraneousValues: true });
+  }
+
+  async deletePhotoComment(user: DecodedUserToken, boardId: number, commentId: number): Promise<DeletedCommentResponseDto> {
+    await this.validateGalleryBoard(boardId);
+
+    const comment = await this.commentRepository.findOne({
+      where: { id: commentId, photo: { post: { board: boardId as any } } },
+      relations: ['photo', 'author'],
+    });
+
+    if (!comment) {
+      throw new NotFoundException(createError(ErrorCode.COMMENT_NOT_FOUND));
+    }
+
+    if (comment.author.id !== user.id) {
+      throw new BadRequestException(createError(ErrorCode.NO_PERMISSION_TO_EDIT));
+    }
+
+    const deletedComment = new DeletedComment();
+    deletedComment.originalCommentId = comment.id;
+    deletedComment.postId = comment.photo!.post.id;
+    deletedComment.boardId = boardId;
+    deletedComment.authorId = comment.author.id;
+    deletedComment.content = comment.content;
+
+    const saved = await this.dataSource.transaction(async (manager) => {
+      const result = await manager.save(DeletedComment, deletedComment);
+      await manager.softRemove(Comment, comment);
+      const photo = comment.photo!;
+      photo.commentCount = Math.max(0, photo.commentCount - 1);
+      await manager.save(Photo, photo);
+      return result;
+    });
+
+    return plainToInstance(DeletedCommentResponseDto, saved, { excludeExtraneousValues: true });
   }
 }

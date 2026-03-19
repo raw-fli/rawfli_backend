@@ -10,10 +10,12 @@ import { User } from 'src/domain/user/entity/user.entity';
 import { PostsService } from 'src/domain/post/post.service';
 import { CamerasModule } from 'src/domain/camera/camera.module';
 import { LensesModule } from 'src/domain/lens/lens.module';
+import { Comment } from 'src/common/entities/comment.entity';
+import { DeletedComment } from 'src/common/entities/deleted-comment.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Post, Board, Photo, Image, User, DeletedPost]),
+    TypeOrmModule.forFeature([Post, Board, Photo, Image, User, DeletedPost, Comment, DeletedComment]),
     CamerasModule,
     LensesModule,
   ],

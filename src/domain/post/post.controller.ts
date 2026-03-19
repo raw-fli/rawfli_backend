@@ -19,6 +19,9 @@ import { PostsService } from 'src/domain/post/post.service';
 import { createResponseForm, Try } from 'src/common/types';
 import { ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ApiResponse } from 'src/common/dtos/api-response.dto';
+import { CreateCommentDto } from 'src/common/dtos/create-comment.dto';
+import { CommentResponseDto } from 'src/common/dtos/comment.response.dto';
+import { DeletedCommentResponseDto } from 'src/common/dtos/deleted-comment.response.dto';
 
 @ApiTags('posts')
 @Controller('api/v1/boards/:boardId/posts')
@@ -75,6 +78,36 @@ export class PostsController {
     @Param('postId', ParseIntPipe) postId: number,
   ): Promise<Try<DeletedPostResponseDto>> {
     const deleted = await this.postsService.deletePost(user, boardId, postId);
+    return createResponseForm(deleted);
+  }
+
+  @ApiOperation({ summary: '작품 댓글 작성' })
+  @ApiCreatedResponse({ type: ApiResponse(CommentResponseDto) })
+  @UseGuards(JwtGuard)
+  @Post(':postId/photos/:photoId/comments')
+  async createPhotoComment(
+    @UserDecorator() user: DecodedUserToken,
+    @Param('boardId', ParseIntPipe) boardId: number,
+    @Param('postId', ParseIntPipe) postId: number,
+    @Param('photoId') photoId: string,
+    @Body() dto: CreateCommentDto,
+  ): Promise<Try<CommentResponseDto>> {
+    const comment = await this.postsService.createPhotoComment(user, boardId, postId, photoId, dto);
+    return createResponseForm(comment);
+  }
+
+  @ApiOperation({ summary: '작품 댓글 삭제' })
+  @ApiOkResponse({ type: ApiResponse(DeletedCommentResponseDto) })
+  @UseGuards(JwtGuard)
+  @Delete(':postId/photos/:photoId/comments/:commentId')
+  async deletePhotoComment(
+    @UserDecorator() user: DecodedUserToken,
+    @Param('boardId', ParseIntPipe) boardId: number,
+    @Param('postId', ParseIntPipe) postId: number,
+    @Param('photoId') photoId: string,
+    @Param('commentId', ParseIntPipe) commentId: number,
+  ): Promise<Try<DeletedCommentResponseDto>> {
+    const deleted = await this.postsService.deletePhotoComment(user, boardId, commentId);
     return createResponseForm(deleted);
   }
 }

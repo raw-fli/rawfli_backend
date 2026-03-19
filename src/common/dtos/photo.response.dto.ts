@@ -1,5 +1,6 @@
 import { Expose, Type } from 'class-transformer';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { CommentResponseDto } from 'src/common/dtos/comment.response.dto';
 
 export class PhotoCameraResponseDto {
   @Expose()
@@ -71,6 +72,14 @@ export class PhotoResponseDto {
   @ApiPropertyOptional({ type: () => PhotoLensResponseDto, nullable: true })
   @Type(() => PhotoLensResponseDto)
   lens: PhotoLensResponseDto | null;
+
+  @Expose()
+  commentCount: number;
+
+  @Expose()
+  @ApiPropertyOptional({ type: () => [CommentResponseDto] })
+  @Type(() => CommentResponseDto)
+  comments: CommentResponseDto[];
 
   constructor(partial: Partial<PhotoResponseDto>) {
     Object.assign(this, partial);

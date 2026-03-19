@@ -6,6 +6,7 @@ import {
   JoinColumn,
   ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryColumn,
   Relation,
 } from 'typeorm';
@@ -15,6 +16,7 @@ import { User } from 'src/domain/user/entity/user.entity';
 import { Post } from 'src/domain/post/entity/post.entity';
 import { Camera } from 'src/domain/camera/entity/camera.entity';
 import { Lens } from 'src/domain/lens/entity/lens.entity';
+import { Comment } from 'src/common/entities/comment.entity';
 
 @Entity()
 export class Photo {
@@ -74,4 +76,10 @@ export class Photo {
 
   @ManyToMany('Article', 'referencedPhotos')
   referencedInArticles!: any[];
+
+  @OneToMany('Comment', (comment: Comment) => comment.photo)
+  comments!: Relation<Comment[]>;
+
+  @Column({ default: 0 })
+  commentCount!: number;
 }

@@ -16,6 +16,7 @@ export enum ErrorCode {
   CAMERA_NOT_FOUND = 4020,
   LENS_NOT_FOUND = 4021,
   ADMIN_ALREADY_EXISTS = 4022,
+  PHOTO_NOT_FOUND = 4023,
 }
 
 export const ErrorMessage: Record<ErrorCode, string> = {
@@ -36,6 +37,7 @@ export const ErrorMessage: Record<ErrorCode, string> = {
   [ErrorCode.CAMERA_NOT_FOUND]: '카메라를 찾지 못했어요.',
   [ErrorCode.LENS_NOT_FOUND]: '렌즈를 찾지 못했어요.',
   [ErrorCode.ADMIN_ALREADY_EXISTS]: '이미 존재하는 관리자 계정입니다.',
+  [ErrorCode.PHOTO_NOT_FOUND]: '작품을 찾지 못했어요.',
 };
 
 export function createError(code: ErrorCode) {
