@@ -28,6 +28,10 @@ export class Post extends CommonColumns {
   @Column('text')
   content!: string;
 
+  @ManyToOne(() => Photo, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'coverPhotoId' })
+  coverPhoto!: Relation<Photo> | null;
+
   @OneToMany('Photo', (photo: Photo) => photo.post)
   photos!: Relation<Photo[]>;
 }

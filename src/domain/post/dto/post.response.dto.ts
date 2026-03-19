@@ -25,6 +25,10 @@ export class PostResponseDto {
   @Expose()
   createdAt: Date;
 
+  @Expose()
+  @ApiPropertyOptional({ type: String, nullable: true })
+  coverPhotoId: string | null;
+
   constructor(partial: Partial<PostResponseDto>) {
     Object.assign(this, partial);
   }
@@ -46,6 +50,10 @@ export class PostListItemResponseDto {
 
   @Expose()
   photoCount: number;
+
+  @Expose()
+  @ApiPropertyOptional({ type: String, nullable: true })
+  thumbnailKey: string | null;
 
   constructor(partial: Partial<PostListItemResponseDto>) {
     Object.assign(this, partial);

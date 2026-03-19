@@ -43,6 +43,21 @@ export class PostsService {
     return board;
   }
 
+  private resolveThumbnailKey(post: Post): string | null {
+    const coverPhotoId = post.coverPhoto?.id;
+    if (coverPhotoId) {
+      const matchedCover = post.photos?.find((photo) => photo.id === coverPhotoId);
+      if (matchedCover?.image?.key) {
+        return matchedCover.image.key;
+      }
+      if (post.coverPhoto?.image?.key) {
+        return post.coverPhoto.image.key;
+      }
+    }
+
+    return post.photos?.[0]?.image?.key ?? null;
+  }
+
   async createPost(user: DecodedUserToken, boardId: number, dto: CreatePostDto): Promise<PostResponseDto> {
     const board = await this.validateGalleryBoard(boardId);
 
@@ -109,7 +124,7 @@ export class PostsService {
 
     const [posts, total] = await this.postRepository.findAndCount({
       where: { board: boardId as any },
-      relations: ['author', 'photos'],
+      relations: ['author', 'photos', 'photos.image', 'coverPhoto', 'coverPhoto.image'],
       order: { createdAt: 'DESC' },
       skip: (page - 1) * limit,
       take: limit,
@@ -118,6 +133,7 @@ export class PostsService {
     const items = posts.map((post) => {
       const dto = plainToInstance(PostListItemResponseDto, post, { excludeExtraneousValues: true });
       dto.photoCount = post.photos?.length ?? 0;
+      dto.thumbnailKey = this.resolveThumbnailKey(post);
       return dto;
     });
 
@@ -168,6 +184,9 @@ export class PostsService {
         .createQueryBuilder('post')
         .leftJoinAndSelect('post.author', 'author')
         .leftJoinAndSelect('post.photos', 'photos')
+        .leftJoinAndSelect('photos.image', 'photosImage')
+        .leftJoinAndSelect('post.coverPhoto', 'coverPhoto')
+        .leftJoinAndSelect('coverPhoto.image', 'coverPhotoImage')
         .where('post.board = :boardId AND post.id IN (:...ids)', { boardId, ids: postIds })
         .getMany();
 
@@ -178,6 +197,7 @@ export class PostsService {
     const items = posts.map((post) => {
       const dto = plainToInstance(PostListItemResponseDto, post, { excludeExtraneousValues: true });
       dto.photoCount = post.photos?.length ?? 0;
+      dto.thumbnailKey = this.resolveThumbnailKey(post);
       return dto;
     });
 
@@ -189,7 +209,7 @@ export class PostsService {
 
     const post = await this.postRepository.findOne({
       where: { id: postId, board: boardId as any },
-      relations: ['author', 'photos', 'photos.image', 'photos.camera', 'photos.lens', 'photos.comments', 'photos.comments.author'],
+      relations: ['author', 'coverPhoto', 'photos', 'photos.image', 'photos.camera', 'photos.lens', 'photos.comments', 'photos.comments.author'],
     });
 
     if (!post) {
@@ -198,6 +218,50 @@ export class PostsService {
 
     return plainToInstance(PostResponseDto, {
       ...post,
+      coverPhotoId: post.coverPhoto?.id ?? null,
+      photos: post.photos?.map((photo) => ({
+        ...photo,
+        imageKey: photo.image?.key,
+      })),
+    }, { excludeExtraneousValues: true });
+  }
+
+  async setPostCoverPhoto(
+    user: DecodedUserToken,
+    boardId: number,
+    postId: number,
+    photoId: string | null,
+  ): Promise<PostResponseDto> {
+    await this.validateGalleryBoard(boardId);
+
+    const post = await this.postRepository.findOne({
+      where: { id: postId, board: boardId as any },
+      relations: ['author', 'photos', 'photos.image', 'photos.camera', 'photos.lens', 'photos.comments', 'photos.comments.author', 'coverPhoto'],
+    });
+
+    if (!post) {
+      throw new NotFoundException(createError(ErrorCode.POST_NOT_FOUND));
+    }
+
+    if (post.author.id !== user.id) {
+      throw new BadRequestException(createError(ErrorCode.NO_PERMISSION_TO_EDIT));
+    }
+
+    if (!photoId) {
+      post.coverPhoto = null;
+    } else {
+      const targetPhoto = post.photos?.find((photo) => photo.id === photoId);
+      if (!targetPhoto) {
+        throw new NotFoundException(createError(ErrorCode.PHOTO_NOT_FOUND));
+      }
+      post.coverPhoto = targetPhoto;
+    }
+
+    await this.postRepository.save(post);
+
+    return plainToInstance(PostResponseDto, {
+      ...post,
+      coverPhotoId: post.coverPhoto?.id ?? null,
       photos: post.photos?.map((photo) => ({
         ...photo,
         imageKey: photo.image?.key,

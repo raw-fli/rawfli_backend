@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   ParseIntPipe,
   Post,
   Query,
@@ -23,6 +24,7 @@ import { CreateCommentDto } from 'src/common/dtos/create-comment.dto';
 import { CommentResponseDto } from 'src/common/dtos/comment.response.dto';
 import { DeletedCommentResponseDto } from 'src/common/dtos/deleted-comment.response.dto';
 import { PostQueryDto } from 'src/domain/post/dto/post-query.dto';
+import { SetCoverPhotoDto } from 'src/domain/post/dto/set-cover-photo.dto';
 
 @ApiTags('posts')
 @Controller('api/v1/boards/:boardId/posts')
@@ -94,6 +96,20 @@ export class PostsController {
   ): Promise<Try<DeletedPostResponseDto>> {
     const deleted = await this.postsService.deletePost(user, boardId, postId);
     return createResponseForm(deleted);
+  }
+
+  @ApiOperation({ summary: '포스트 대표 작품 지정' })
+  @ApiOkResponse({ type: ApiResponse(PostResponseDto) })
+  @UseGuards(JwtGuard)
+  @Patch(':postId/cover')
+  async setPostCoverPhoto(
+    @UserDecorator() user: DecodedUserToken,
+    @Param('boardId', ParseIntPipe) boardId: number,
+    @Param('postId', ParseIntPipe) postId: number,
+    @Body() dto: SetCoverPhotoDto,
+  ): Promise<Try<PostResponseDto>> {
+    const updated = await this.postsService.setPostCoverPhoto(user, boardId, postId, dto.photoId ?? null);
+    return createResponseForm(updated);
   }
 
   @ApiOperation({ summary: '작품 댓글 작성' })
