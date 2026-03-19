@@ -31,6 +31,7 @@ import { CameraAlias } from './domain/camera/entity/camera-alias.entity';
 import { Lens } from './domain/lens/entity/lens.entity';
 import { LensAlias } from './domain/lens/entity/lens-alias.entity';
 import { Admin } from './domain/admin/entity/admin.entity';
+import { SequenceSyncService } from './common/services/sequence-sync.service';
 
 @Module({
   imports: [
@@ -75,7 +76,8 @@ import { Admin } from './domain/admin/entity/admin.entity';
     {
       provide: APP_FILTER,
       useClass: HttpExceptionFilter,
-    }
+    },
+    SequenceSyncService,
   ],
 })
 export class AppModule implements NestModule {
