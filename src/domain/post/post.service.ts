@@ -109,15 +109,17 @@ export class PostsService {
 
     const [posts, total] = await this.postRepository.findAndCount({
       where: { board: boardId as any },
-      relations: ['author'],
+      relations: ['author', 'photos'],
       order: { createdAt: 'DESC' },
       skip: (page - 1) * limit,
       take: limit,
     });
 
-    const items = posts.map((post) =>
-      plainToInstance(PostListItemResponseDto, post, { excludeExtraneousValues: true }),
-    );
+    const items = posts.map((post) => {
+      const dto = plainToInstance(PostListItemResponseDto, post, { excludeExtraneousValues: true });
+      dto.photoCount = post.photos?.length ?? 0;
+      return dto;
+    });
 
     return plainToInstance(PostListResponseDto, { posts: items, total }, { excludeExtraneousValues: true });
   }
@@ -165,6 +167,7 @@ export class PostsService {
       const postsMap = await this.postRepository
         .createQueryBuilder('post')
         .leftJoinAndSelect('post.author', 'author')
+        .leftJoinAndSelect('post.photos', 'photos')
         .where('post.board = :boardId AND post.id IN (:...ids)', { boardId, ids: postIds })
         .getMany();
 
@@ -172,9 +175,11 @@ export class PostsService {
       posts = postIds.map((id) => byId.get(id)).filter((post): post is Post => !!post);
     }
 
-    const items = posts.map((post) =>
-      plainToInstance(PostListItemResponseDto, post, { excludeExtraneousValues: true }),
-    );
+    const items = posts.map((post) => {
+      const dto = plainToInstance(PostListItemResponseDto, post, { excludeExtraneousValues: true });
+      dto.photoCount = post.photos?.length ?? 0;
+      return dto;
+    });
 
     return plainToInstance(PostListResponseDto, { posts: items, total }, { excludeExtraneousValues: true });
   }

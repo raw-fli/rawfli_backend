@@ -44,6 +44,9 @@ export class PostListItemResponseDto {
   @Expose()
   createdAt: Date;
 
+  @Expose()
+  photoCount: number;
+
   constructor(partial: Partial<PostListItemResponseDto>) {
     Object.assign(this, partial);
   }
