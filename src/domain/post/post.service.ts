@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { createError, ErrorCode } from 'src/common/exception/error';
-import { CreatePostDto } from 'src/domain/post/dto/create-post.dto';
+import { CreatePostDto, CreatePostPhotoDto } from 'src/domain/post/dto/create-post.dto';
 import { DeletedPostResponseDto } from 'src/domain/post/dto/deleted-post.response.dto';
 import { PostListItemResponseDto, PostListResponseDto, PostResponseDto } from 'src/domain/post/dto/post.response.dto';
 import { Image } from 'src/domain/aws/entity/image.entity';
@@ -12,12 +12,13 @@ import { DeletedPost } from 'src/domain/post/entity/deleted-post.entity';
 import { DecodedUserToken, User } from 'src/domain/user/entity/user.entity';
 import { CamerasService } from 'src/domain/camera/camera.service';
 import { LensesService } from 'src/domain/lens/lens.service';
-import { DataSource, In, Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Comment } from 'src/common/entities/comment.entity';
 import { CreateCommentDto } from 'src/common/dtos/create-comment.dto';
 import { CommentResponseDto } from 'src/common/dtos/comment.response.dto';
 import { DeletedCommentResponseDto } from 'src/common/dtos/deleted-comment.response.dto';
 import { DeletedComment } from 'src/common/entities/deleted-comment.entity';
+import { parseShutterSpeed, sanitizeExifString } from 'src/common/utils/exif.utils';
 
 @Injectable()
 export class PostsService {
@@ -45,6 +46,18 @@ export class PostsService {
     return post.photos?.[0]?.image?.key ?? null;
   }
 
+  private toCreatePhotoInputs(dto: CreatePostDto): CreatePostPhotoDto[] {
+    if (dto.photos?.length) {
+      return dto.photos;
+    }
+
+    const imageIds = dto.imageIds ?? [];
+    return imageIds.map((imageId, index) => ({
+      imageId,
+      description: dto.photoDescriptions?.[index],
+    }));
+  }
+
   async createPost(user: DecodedUserToken, dto: CreatePostDto): Promise<PostResponseDto> {
     return await this.dataSource.transaction(async (manager) => {
       const post = new Post();
@@ -53,20 +66,35 @@ export class PostsService {
       post.content = dto.content;
       const savedPost = await manager.save(Post, post);
 
-      if (dto.imageIds && dto.imageIds.length > 0) {
-        const images = await manager.findBy(Image, { id: In(dto.imageIds) });
+      const photoInputs = this.toCreatePhotoInputs(dto);
+
+      if (photoInputs.length > 0) {
+        const uniqueImageIds = [...new Set(photoInputs.map((input) => input.imageId))];
+        const images = await manager
+          .createQueryBuilder(Image, 'image')
+          .innerJoin('image.uploader', 'uploader')
+          .where('image.id IN (:...ids)', { ids: uniqueImageIds })
+          .andWhere('uploader.id = :userId', { userId: user.id })
+          .getMany();
+
+        if (images.length !== uniqueImageIds.length) {
+          throw new BadRequestException('본인이 업로드한 이미지만 작품으로 추가할 수 있어요.');
+        }
+
+        const imageMap = new Map(images.map((image) => [image.id, image]));
         const photos: Photo[] = [];
 
-        for (let index = 0; index < dto.imageIds.length; index += 1) {
-          const imageId = dto.imageIds[index];
-          const image = images.find((img) => img.id === imageId);
+        for (const input of photoInputs) {
+          const image = imageMap.get(input.imageId);
           if (!image) continue;
 
           const photo = new Photo();
           photo.image = image;
           photo.post = savedPost;
           photo.author = { id: user.id } as User;
-          photo.description = dto.photoDescriptions?.[index] ?? undefined;
+
+          const rawDescription = typeof input.description === 'string' ? input.description.trim() : undefined;
+          photo.description = rawDescription ? rawDescription : undefined;
 
           if (image.exifData) {
             const exif = image.exifData;
@@ -78,13 +106,88 @@ export class PostsService {
 
             if (exif.cameraModel) {
               photo.camera = await this.camerasService.findOrCreateByExif(
-                exif.cameraModel, exif.cameraMake, manager,
+                exif.cameraModel,
+                exif.cameraMake,
+                manager,
               );
             }
 
             if (exif.lensModel) {
               photo.lens = await this.lensesService.findOrCreateByExif(
-                exif.lensModel, exif.lensMake, manager,
+                exif.lensModel,
+                exif.lensMake,
+                manager,
+              );
+            }
+          } else {
+            photo.iso = null;
+            photo.aperture = null;
+            photo.shutterSpeedDisplay = null;
+            photo.shutterSpeedValue = null;
+            photo.focalLength = null;
+            photo.camera = null;
+            photo.lens = null;
+          }
+
+          if (input.iso !== undefined) {
+            photo.iso = input.iso;
+          }
+          if (input.aperture !== undefined) {
+            photo.aperture = input.aperture;
+          }
+          if (input.focalLength !== undefined) {
+            photo.focalLength = input.focalLength;
+          }
+
+          if (input.shutterSpeed !== undefined) {
+            const normalizedShutter = input.shutterSpeed.trim();
+            if (!normalizedShutter) {
+              photo.shutterSpeedDisplay = null;
+              photo.shutterSpeedValue = null;
+            } else {
+              const parsed = parseShutterSpeed(normalizedShutter);
+              if (parsed) {
+                photo.shutterSpeedDisplay = parsed.display;
+                photo.shutterSpeedValue = parsed.value;
+              } else {
+                photo.shutterSpeedDisplay = normalizedShutter;
+                photo.shutterSpeedValue = null;
+              }
+            }
+          }
+
+          if (input.cameraModel !== undefined) {
+            const normalizedCameraModel = sanitizeExifString(String(input.cameraModel));
+            if (!normalizedCameraModel) {
+              photo.camera = null;
+            } else {
+              const normalizedCameraBrand =
+                typeof input.cameraBrand === 'string' && input.cameraBrand.trim()
+                  ? sanitizeExifString(input.cameraBrand)
+                  : null;
+
+              photo.camera = await this.camerasService.findOrCreateByExif(
+                normalizedCameraModel,
+                normalizedCameraBrand,
+                manager,
+              );
+            }
+          }
+
+          if (input.lensModel !== undefined) {
+            const normalizedLensModel = sanitizeExifString(String(input.lensModel));
+            if (!normalizedLensModel) {
+              photo.lens = null;
+            } else {
+              const normalizedLensBrand =
+                typeof input.lensBrand === 'string' && input.lensBrand.trim()
+                  ? sanitizeExifString(input.lensBrand)
+                  : null;
+
+              photo.lens = await this.lensesService.findOrCreateByExif(
+                normalizedLensModel,
+                normalizedLensBrand,
+                manager,
               );
             }
           }
