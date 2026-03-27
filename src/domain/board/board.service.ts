@@ -13,7 +13,6 @@ import { Repository } from 'typeorm';
 const DEFAULT_BOARDS: Partial<Board>[] = [
   { type: 'community', name: '자유게시판', description: '자유롭게 이야기해요' },
   { type: 'community', name: '질문게시판', description: '궁금한 것을 물어봐요' },
-  { type: 'gallery', name: '사진 갤러리', description: '사진을 공유해요' },
 ];
 
 @Injectable()
@@ -74,7 +73,6 @@ export class BoardsService implements OnModuleInit {
   ): Promise<SearchResultsResponseDto> {
     const trimmedKeyword = keyword.trim();
 
-    // Search articles
     const articleQb = this.articleRepository
       .createQueryBuilder('article')
       .leftJoinAndSelect('article.author', 'author')
@@ -87,19 +85,14 @@ export class BoardsService implements OnModuleInit {
       articleQb.andWhere('board.id = :boardId', { boardId });
     }
 
-    // Search posts
-    const postQb = this.postRepository
-      .createQueryBuilder('post')
-      .leftJoinAndSelect('post.author', 'author')
-      .leftJoinAndSelect('post.board', 'board')
-      .andWhere(this.buildPostSearchCondition(searchIn), { keyword: `%${trimmedKeyword}%` });
-
-    if (boardId !== undefined) {
-      postQb.andWhere('board.id = :boardId', { boardId });
-    }
-
     const [articles, articleTotal] = await articleQb.getManyAndCount();
-    const [posts, postTotal] = await postQb.getManyAndCount();
+    const [posts, postTotal] = boardId === undefined
+      ? await this.postRepository
+        .createQueryBuilder('post')
+        .leftJoinAndSelect('post.author', 'author')
+        .andWhere(this.buildPostSearchCondition(searchIn), { keyword: `%${trimmedKeyword}%` })
+        .getManyAndCount()
+      : [[], 0];
 
     const total = articleTotal + postTotal;
 
@@ -134,8 +127,8 @@ export class BoardsService implements OnModuleInit {
         {
           type: 'post' as const,
           id: post.id,
-          boardId: post.board?.id,
-          boardName: post.board?.name,
+          boardId: null,
+          boardName: null,
           title: post.title,
           content: post.content,
           author: post.author

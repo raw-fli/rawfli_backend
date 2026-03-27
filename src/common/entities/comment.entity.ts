@@ -8,7 +8,6 @@ import { User } from 'src/domain/user/entity/user.entity';
 export class Comment extends CommonColumns {
   @ManyToOne('Article', (article: Article) => article.comments, { onDelete: 'CASCADE', nullable: true })
   @JoinColumn({ name: 'articleId', referencedColumnName: 'id' })
-  @JoinColumn({ name: 'articleBoardId', referencedColumnName: 'board' })
   article?: Relation<Article>;
 
   @ManyToOne('Photo', (photo: Photo) => photo.comments, { onDelete: 'CASCADE', nullable: true })

@@ -36,7 +36,6 @@ export class Photo {
 
   @ManyToOne('Post', (post: Post) => post.photos, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'postId', referencedColumnName: 'id' })
-  @JoinColumn({ name: 'postBoardId', referencedColumnName: 'board' })
   post!: Relation<Post>;
 
   @ManyToOne('User', (user: User) => user.photos)

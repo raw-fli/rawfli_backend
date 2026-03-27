@@ -16,6 +16,7 @@ import { CamerasService } from 'src/domain/camera/camera.service';
 import { LensesService } from 'src/domain/lens/lens.service';
 import { createResponseForm, Try } from 'src/common/types';
 import {
+  AdminDeletedArticleListResponseDto,
   AdminDeletedCommentListResponseDto,
   AdminDeletedPostListResponseDto,
   AdminImageListResponseDto,
@@ -146,6 +147,22 @@ export class AdminController {
     @Query('limit') limit?: string,
   ): Promise<Try<AdminDeletedPostListResponseDto>> {
     const result = await this.adminService.getDeletedPosts(
+      page ? parseInt(page, 10) : 1,
+      limit ? parseInt(limit, 10) : 20,
+    );
+    return createResponseForm(result);
+  }
+
+  @ApiOperation({ summary: '삭제된 아티클 목록 조회' })
+  @ApiOkResponse({ type: ApiResponse(AdminDeletedArticleListResponseDto) })
+  @ApiBearerAuth()
+  @UseGuards(AdminGuard)
+  @Get('deleted-articles')
+  async getDeletedArticles(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ): Promise<Try<AdminDeletedArticleListResponseDto>> {
+    const result = await this.adminService.getDeletedArticles(
       page ? parseInt(page, 10) : 1,
       limit ? parseInt(limit, 10) : 20,
     );

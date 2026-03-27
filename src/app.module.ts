@@ -17,8 +17,9 @@ import { Comment } from './common/entities/comment.entity';
 import { Photo } from './common/entities/photo.entity';
 import { Image } from './domain/aws/entity/image.entity';
 import { Board } from './domain/board/entity/board.entity';
-import { DeletedPost } from './common/entities/deleted-post.entity';
+import { DeletedPost } from './domain/post/entity/deleted-post.entity';
 import { Article } from './domain/article/entity/article.entity';
+import { DeletedArticle } from './domain/article/entity/deleted-article.entity';
 import { ArticleModule } from './domain/article/article.module';
 import { DeletedComment } from './common/entities/deleted-comment.entity';
 import { Follow } from './domain/user/entity/follow.entity';
@@ -44,12 +45,12 @@ import { SequenceSyncService } from './common/services/sequence-sync.service';
     TypeOrmModule.forRootAsync({
       useFactory: (configService: ConfigService) => ({
         type: 'postgres',
-        host: configService.get('localhost'),
+        host: configService.get('POSTGRES_HOST'),
         port: configService.get('POSTGRES_PORT'),
         username: configService.get('POSTGRES_USER'),
         password: configService.get('POSTGRES_PASSWORD'),
         database: configService.get('POSTGRES_DATABASE'),
-        entities: [User, Post, Article, Comment, Photo, Image, Board, DeletedPost, DeletedComment, Follow, Camera, CameraAlias, Lens, LensAlias, Admin],
+        entities: [User, Post, Article, DeletedArticle, Comment, Photo, Image, Board, DeletedPost, DeletedComment, Follow, Camera, CameraAlias, Lens, LensAlias, Admin],
         synchronize: true,
         // extra: {
         //   ssl: true,

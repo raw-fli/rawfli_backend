@@ -1,24 +1,27 @@
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
-export class DeletedComment {
+export class DeletedArticle {
   @PrimaryGeneratedColumn()
   id!: number;
 
   @Column()
-  originalCommentId!: number;
+  originalArticleId!: number;
 
   @Column()
-  postId!: number;
-
-  @Column({ type: 'integer', nullable: true })
-  boardId!: number | null;
+  boardId!: number;
 
   @Column()
   authorId!: number;
 
   @Column('text')
+  title!: string;
+
+  @Column('text')
   content!: string;
+
+  @Column({ default: 0 })
+  views!: number;
 
   @CreateDateColumn()
   originalCreatedAt!: Date;

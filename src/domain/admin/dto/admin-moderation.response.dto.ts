@@ -2,6 +2,7 @@ import { Expose, Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { DeletedCommentResponseDto } from 'src/common/dtos/deleted-comment.response.dto';
 import { DeletedPostResponseDto } from 'src/domain/post/dto/deleted-post.response.dto';
+import { DeletedArticleResponseDto } from 'src/domain/article/dto/deleted-article.response.dto';
 import { ExifData } from 'src/common/utils/exif.utils';
 
 export class AdminImageResponseDto {
@@ -46,6 +47,17 @@ export class AdminDeletedPostListResponseDto {
   @Expose()
   @Type(() => DeletedPostResponseDto)
   posts: DeletedPostResponseDto[];
+
+  @ApiProperty({ example: 40 })
+  @Expose()
+  total: number;
+}
+
+export class AdminDeletedArticleListResponseDto {
+  @ApiProperty({ type: () => [DeletedArticleResponseDto] })
+  @Expose()
+  @Type(() => DeletedArticleResponseDto)
+  articles: DeletedArticleResponseDto[];
 
   @ApiProperty({ example: 40 })
   @Expose()

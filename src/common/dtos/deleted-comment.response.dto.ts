@@ -11,7 +11,7 @@ export class DeletedCommentResponseDto {
   postId: number;
 
   @Expose()
-  boardId: number;
+  boardId: number | null;
 
   @Expose()
   authorId: number;

@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Expose, Type } from 'class-transformer';
 
 export class SearchAuthorResponseDto {
@@ -17,11 +17,13 @@ export class SearchResultItemResponseDto {
   @Expose()
   id!: number;
 
+  @ApiPropertyOptional({ type: Number, nullable: true })
   @Expose()
-  boardId!: number;
+  boardId!: number | null;
 
+  @ApiPropertyOptional({ type: String, nullable: true })
   @Expose()
-  boardName!: string;
+  boardName!: string | null;
 
   @Expose()
   title!: string;

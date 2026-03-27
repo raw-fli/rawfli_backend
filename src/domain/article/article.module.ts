@@ -8,12 +8,12 @@ import { Image } from 'src/domain/aws/entity/image.entity';
 import { User } from 'src/domain/user/entity/user.entity';
 import { Photo } from 'src/common/entities/photo.entity';
 import { Comment } from 'src/common/entities/comment.entity';
-import { DeletedPost } from 'src/common/entities/deleted-post.entity';
+import { DeletedArticle } from 'src/domain/article/entity/deleted-article.entity';
 
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Article, Board, Comment, Photo, Image, User, DeletedPost]),
+    TypeOrmModule.forFeature([Article, Board, Comment, Photo, Image, User, DeletedArticle]),
   ],
   controllers: [ArticleController],
   providers: [ArticleService],

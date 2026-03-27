@@ -1,8 +1,7 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { Post } from 'src/domain/post/entity/post.entity';
 import { Article } from 'src/domain/article/entity/article.entity';
 
-type BoardType = 'community' | 'gallery';
+type BoardType = 'community';
 
 @Entity()
 export class Board {
@@ -20,9 +19,6 @@ export class Board {
 
   @OneToMany(() => Article, (article) => article.board)
   articles!: Article[];
-
-  @OneToMany(() => Post, (post) => post.board)
-  posts!: Post[];
 
   @Column({ default: 0 })
   maxPostId!: number;

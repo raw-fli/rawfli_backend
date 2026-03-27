@@ -17,7 +17,7 @@ import { Image } from 'src/domain/aws/entity/image.entity';
 import { DecodedUserToken, User } from 'src/domain/user/entity/user.entity';
 import { DataSource, In, Repository } from 'typeorm';
 import { Photo } from 'src/common/entities/photo.entity';
-import { DeletedPost } from 'src/common/entities/deleted-post.entity';
+import { DeletedArticle } from 'src/domain/article/entity/deleted-article.entity';
 import { Comment } from 'src/common/entities/comment.entity';
 import { DeletedComment } from 'src/common/entities/deleted-comment.entity';
 import { DeletedCommentResponseDto } from 'src/common/dtos/deleted-comment.response.dto';
@@ -47,11 +47,7 @@ export class ArticleService {
     const board = await this.validateCommunityBoard(boardId);
 
     return await this.dataSource.transaction(async (manager) => {
-      board.maxPostId += 1;
-      await manager.save(Board, board);
-
       const article = new Article();
-      article.id = board.maxPostId;
       article.board = board;
       article.author = { id: user.id } as User;
       article.title = dto.title;
@@ -117,7 +113,7 @@ export class ArticleService {
 
     const ranked = await this.articleRepository
       .createQueryBuilder('article')
-      .select(['article.id', 'article.board'])
+      .select(['article.id'])
       .where('article.board = :boardId', { boardId })
       .orderBy(hnScore, 'DESC')
       .skip((page - 1) * limit)
@@ -198,18 +194,17 @@ export class ArticleService {
       throw new BadRequestException(createError(ErrorCode.NO_PERMISSION_TO_EDIT));
     }
 
-    const deletedPost = new DeletedPost();
-    deletedPost.originalPostId = article.id;
-    deletedPost.boardId = boardId;
-    deletedPost.authorId = article.author.id;
-    deletedPost.title = article.title;
-    deletedPost.content = article.content;
-    deletedPost.type = 'community';
-    deletedPost.views = article.views;
-    deletedPost.originalCreatedAt = article.createdAt as Date;
+    const deletedArticle = new DeletedArticle();
+    deletedArticle.originalArticleId = article.id;
+    deletedArticle.boardId = boardId;
+    deletedArticle.authorId = article.author.id;
+    deletedArticle.title = article.title;
+    deletedArticle.content = article.content;
+    deletedArticle.views = article.views;
+    deletedArticle.originalCreatedAt = article.createdAt as Date;
 
     const saved = await this.dataSource.transaction(async (manager) => {
-      const result = await manager.save(DeletedPost, deletedPost);
+      const result = await manager.save(DeletedArticle, deletedArticle);
       await manager.remove(Article, article);
       return result;
     });
@@ -301,10 +296,16 @@ export class ArticleService {
       throw new BadRequestException(createError(ErrorCode.NO_PERMISSION_TO_EDIT));
     }
 
+    if (!comment.article) {
+      throw new NotFoundException(createError(ErrorCode.ARTICLE_NOT_FOUND));
+    }
+
+    const targetArticle = comment.article;
+
     const deletedComment = new DeletedComment();
     deletedComment.originalCommentId = comment.id;
-    deletedComment.postId = comment.article.id;
-    deletedComment.boardId = comment.article.board.id;
+    deletedComment.postId = targetArticle.id;
+    deletedComment.boardId = targetArticle.board.id;
     deletedComment.authorId = comment.author.id;
     deletedComment.content = comment.content;
     deletedComment.originalCreatedAt = comment.createdAt as Date;
@@ -313,7 +314,7 @@ export class ArticleService {
     await this.dataSource.transaction(async (manager) => {
       await manager.save(DeletedComment, deletedComment);
       await manager.softRemove(comment);
-      await manager.decrement(Article, { id: comment.article.id, board: comment.article.board as any }, 'commentCount', 1);
+      await manager.decrement(Article, { id: targetArticle.id }, 'commentCount', 1);
     });
 
     return plainToInstance(DeletedCommentResponseDto, deletedComment, { excludeExtraneousValues: true });

@@ -8,14 +8,17 @@ import { Admin, DecodedAdminToken } from 'src/domain/admin/entity/admin.entity';
 import { CreateAdminDto } from 'src/domain/admin/dto/create-admin.dto';
 import { createError, ErrorCode } from 'src/common/exception/error';
 import { Image } from 'src/domain/aws/entity/image.entity';
-import { DeletedPost } from 'src/common/entities/deleted-post.entity';
+import { DeletedPost } from 'src/domain/post/entity/deleted-post.entity';
+import { DeletedArticle } from 'src/domain/article/entity/deleted-article.entity';
 import { DeletedComment } from 'src/common/entities/deleted-comment.entity';
 import {
+  AdminDeletedArticleListResponseDto,
   AdminDeletedCommentListResponseDto,
   AdminDeletedPostListResponseDto,
   AdminImageListResponseDto,
   AdminImageResponseDto,
 } from 'src/domain/admin/dto/admin-moderation.response.dto';
+import { DeletedArticleResponseDto } from 'src/domain/article/dto/deleted-article.response.dto';
 import { DeletedPostResponseDto } from 'src/domain/post/dto/deleted-post.response.dto';
 import { DeletedCommentResponseDto } from 'src/common/dtos/deleted-comment.response.dto';
 
@@ -25,6 +28,7 @@ export class AdminService {
     @InjectRepository(Admin) private readonly adminRepository: Repository<Admin>,
     @InjectRepository(Image) private readonly imageRepository: Repository<Image>,
     @InjectRepository(DeletedPost) private readonly deletedPostRepository: Repository<DeletedPost>,
+    @InjectRepository(DeletedArticle) private readonly deletedArticleRepository: Repository<DeletedArticle>,
     @InjectRepository(DeletedComment) private readonly deletedCommentRepository: Repository<DeletedComment>,
     private readonly jwtService: JwtService,
   ) { }
@@ -104,6 +108,24 @@ export class AdminService {
     return plainToInstance(
       AdminDeletedPostListResponseDto,
       { posts: items, total },
+      { excludeExtraneousValues: true },
+    );
+  }
+
+  async getDeletedArticles(page: number = 1, limit: number = 20): Promise<AdminDeletedArticleListResponseDto> {
+    const [articles, total] = await this.deletedArticleRepository.findAndCount({
+      order: { deletedAt: 'DESC' },
+      skip: (page - 1) * limit,
+      take: limit,
+    });
+
+    const items = articles.map((article) =>
+      plainToInstance(DeletedArticleResponseDto, article, { excludeExtraneousValues: true }),
+    );
+
+    return plainToInstance(
+      AdminDeletedArticleListResponseDto,
+      { articles: items, total },
       { excludeExtraneousValues: true },
     );
   }

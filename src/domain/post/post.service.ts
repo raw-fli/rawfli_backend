@@ -5,11 +5,10 @@ import { createError, ErrorCode } from 'src/common/exception/error';
 import { CreatePostDto } from 'src/domain/post/dto/create-post.dto';
 import { DeletedPostResponseDto } from 'src/domain/post/dto/deleted-post.response.dto';
 import { PostListItemResponseDto, PostListResponseDto, PostResponseDto } from 'src/domain/post/dto/post.response.dto';
-import { Board } from 'src/domain/board/entity/board.entity';
 import { Image } from 'src/domain/aws/entity/image.entity';
 import { Photo } from 'src/common/entities/photo.entity';
 import { Post } from 'src/domain/post/entity/post.entity';
-import { DeletedPost } from 'src/common/entities/deleted-post.entity';
+import { DeletedPost } from 'src/domain/post/entity/deleted-post.entity';
 import { DecodedUserToken, User } from 'src/domain/user/entity/user.entity';
 import { CamerasService } from 'src/domain/camera/camera.service';
 import { LensesService } from 'src/domain/lens/lens.service';
@@ -24,24 +23,12 @@ import { DeletedComment } from 'src/common/entities/deleted-comment.entity';
 export class PostsService {
   constructor(
     @InjectRepository(Post) private readonly postRepository: Repository<Post>,
-    @InjectRepository(Board) private readonly boardRepository: Repository<Board>,
     @InjectRepository(Photo) private readonly photoRepository: Repository<Photo>,
     @InjectRepository(Comment) private readonly commentRepository: Repository<Comment>,
     private readonly camerasService: CamerasService,
     private readonly lensesService: LensesService,
     private readonly dataSource: DataSource,
   ) { }
-
-  private async validateGalleryBoard(boardId: number): Promise<Board> {
-    const board = await this.boardRepository.findOne({ where: { id: boardId } });
-    if (!board) {
-      throw new NotFoundException(createError(ErrorCode.BOARD_NOT_FOUND));
-    }
-    if (board.type !== 'gallery') {
-      throw new BadRequestException(createError(ErrorCode.BOARD_TYPE_MISMATCH));
-    }
-    return board;
-  }
 
   private resolveThumbnailKey(post: Post): string | null {
     const coverPhotoId = post.coverPhoto?.id;
@@ -58,16 +45,9 @@ export class PostsService {
     return post.photos?.[0]?.image?.key ?? null;
   }
 
-  async createPost(user: DecodedUserToken, boardId: number, dto: CreatePostDto): Promise<PostResponseDto> {
-    const board = await this.validateGalleryBoard(boardId);
-
+  async createPost(user: DecodedUserToken, dto: CreatePostDto): Promise<PostResponseDto> {
     return await this.dataSource.transaction(async (manager) => {
-      board.maxPostId += 1;
-      await manager.save(Board, board);
-
       const post = new Post();
-      post.id = board.maxPostId;
-      post.board = board;
       post.author = { id: user.id } as User;
       post.title = dto.title;
       post.content = dto.content;
@@ -119,11 +99,8 @@ export class PostsService {
     });
   }
 
-  async getPosts(boardId: number, page: number = 1, limit: number = 20): Promise<PostListResponseDto> {
-    await this.validateGalleryBoard(boardId);
-
+  async getPosts(page: number = 1, limit: number = 20): Promise<PostListResponseDto> {
     const [posts, total] = await this.postRepository.findAndCount({
-      where: { board: boardId as any },
       relations: ['author', 'photos', 'photos.image', 'coverPhoto', 'coverPhoto.image'],
       order: { createdAt: 'DESC' },
       skip: (page - 1) * limit,
@@ -140,37 +117,33 @@ export class PostsService {
     return plainToInstance(PostListResponseDto, { posts: items, total }, { excludeExtraneousValues: true });
   }
 
-  async getPopularPosts(boardId: number, page: number = 1, limit: number = 20): Promise<PostListResponseDto> {
-    await this.validateGalleryBoard(boardId);
-
+  async getPopularPosts(page: number = 1, limit: number = 20): Promise<PostListResponseDto> {
     /**
      * Score = (total_photo_comments * 2 + unique_commenters + sqrt(photo_count + 1)) / (age_hours + 2)^gravity
      */
     const GRAVITY = 1.8;
     const hnScore = `(
-      COALESCE((SELECT SUM(p."commentCount") FROM photo p WHERE p."postId" = post.id AND p."postBoardId" = post."boardId"), 0) * 2.0
+      COALESCE((SELECT SUM(p."commentCount") FROM photo p WHERE p."postId" = post.id), 0) * 2.0
       + COALESCE((
         SELECT COUNT(DISTINCT c."authorId")
         FROM comment c
         INNER JOIN photo p ON c."photoId" = p.id
         WHERE p."postId" = post.id
-          AND p."postBoardId" = post."boardId"
           AND c."deletedAt" IS NULL
       ), 0)
       + SQRT(
-        COALESCE((SELECT COUNT(*) FROM photo p2 WHERE p2."postId" = post.id AND p2."postBoardId" = post."boardId"), 0) + 1
+        COALESCE((SELECT COUNT(*) FROM photo p2 WHERE p2."postId" = post.id), 0) + 1
       )
     ) / POW(
       EXTRACT(EPOCH FROM (NOW() - post."createdAt")) / 3600.0 + 2.0,
       ${GRAVITY}
     )`;
 
-    const total = await this.postRepository.count({ where: { board: boardId as any } });
+    const total = await this.postRepository.count();
 
     const ranked = await this.postRepository
       .createQueryBuilder('post')
       .select(['post.id'])
-      .where('post.board = :boardId', { boardId })
       .orderBy(hnScore, 'DESC')
       .skip((page - 1) * limit)
       .take(limit)
@@ -187,7 +160,7 @@ export class PostsService {
         .leftJoinAndSelect('photos.image', 'photosImage')
         .leftJoinAndSelect('post.coverPhoto', 'coverPhoto')
         .leftJoinAndSelect('coverPhoto.image', 'coverPhotoImage')
-        .where('post.board = :boardId AND post.id IN (:...ids)', { boardId, ids: postIds })
+        .where('post.id IN (:...ids)', { ids: postIds })
         .getMany();
 
       const byId = new Map(postsMap.map((post) => [post.id, post]));
@@ -204,11 +177,9 @@ export class PostsService {
     return plainToInstance(PostListResponseDto, { posts: items, total }, { excludeExtraneousValues: true });
   }
 
-  async getPost(boardId: number, postId: number): Promise<PostResponseDto> {
-    await this.validateGalleryBoard(boardId);
-
+  async getPost(postId: number): Promise<PostResponseDto> {
     const post = await this.postRepository.findOne({
-      where: { id: postId, board: boardId as any },
+      where: { id: postId },
       relations: ['author', 'coverPhoto', 'photos', 'photos.image', 'photos.camera', 'photos.lens', 'photos.comments', 'photos.comments.author'],
     });
 
@@ -228,14 +199,11 @@ export class PostsService {
 
   async setPostCoverPhoto(
     user: DecodedUserToken,
-    boardId: number,
     postId: number,
     photoId: string | null,
   ): Promise<PostResponseDto> {
-    await this.validateGalleryBoard(boardId);
-
     const post = await this.postRepository.findOne({
-      where: { id: postId, board: boardId as any },
+      where: { id: postId },
       relations: ['author', 'photos', 'photos.image', 'photos.camera', 'photos.lens', 'photos.comments', 'photos.comments.author', 'coverPhoto'],
     });
 
@@ -269,11 +237,9 @@ export class PostsService {
     }, { excludeExtraneousValues: true });
   }
 
-  async deletePost(user: DecodedUserToken, boardId: number, postId: number): Promise<DeletedPostResponseDto> {
-    await this.validateGalleryBoard(boardId);
-
+  async deletePost(user: DecodedUserToken, postId: number): Promise<DeletedPostResponseDto> {
     const post = await this.postRepository.findOne({
-      where: { id: postId, board: boardId as any },
+      where: { id: postId },
       relations: ['author'],
     });
 
@@ -287,11 +253,9 @@ export class PostsService {
 
     const deletedPost = new DeletedPost();
     deletedPost.originalPostId = post.id;
-    deletedPost.boardId = boardId;
     deletedPost.authorId = post.author.id;
     deletedPost.title = post.title;
     deletedPost.content = post.content;
-    deletedPost.type = 'gallery';
     deletedPost.views = 0;
     deletedPost.originalCreatedAt = post.createdAt as Date;
 
@@ -306,15 +270,12 @@ export class PostsService {
 
   async createPhotoComment(
     user: DecodedUserToken,
-    boardId: number,
     postId: number,
     photoId: string,
     dto: CreateCommentDto,
   ): Promise<CommentResponseDto> {
-    await this.validateGalleryBoard(boardId);
-
     const photo = await this.photoRepository.findOne({
-      where: { id: photoId, post: { id: postId, board: boardId as any } },
+      where: { id: photoId, post: { id: postId } },
     });
 
     if (!photo) {
@@ -351,12 +312,15 @@ export class PostsService {
     return plainToInstance(CommentResponseDto, saved, { excludeExtraneousValues: true });
   }
 
-  async deletePhotoComment(user: DecodedUserToken, boardId: number, commentId: number): Promise<DeletedCommentResponseDto> {
-    await this.validateGalleryBoard(boardId);
-
+  async deletePhotoComment(
+    user: DecodedUserToken,
+    postId: number,
+    photoId: string,
+    commentId: number,
+  ): Promise<DeletedCommentResponseDto> {
     const comment = await this.commentRepository.findOne({
-      where: { id: commentId, photo: { post: { board: boardId as any } } },
-      relations: ['photo', 'author'],
+      where: { id: commentId, photo: { id: photoId, post: { id: postId } } },
+      relations: ['photo', 'photo.post', 'author'],
     });
 
     if (!comment) {
@@ -370,7 +334,7 @@ export class PostsService {
     const deletedComment = new DeletedComment();
     deletedComment.originalCommentId = comment.id;
     deletedComment.postId = comment.photo!.post.id;
-    deletedComment.boardId = boardId;
+    deletedComment.boardId = null;
     deletedComment.authorId = comment.author.id;
     deletedComment.content = comment.content;
 

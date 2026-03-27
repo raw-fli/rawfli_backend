@@ -5,7 +5,7 @@ export class DeletedArticleResponseDto {
   id: number;
 
   @Expose()
-  originalPostId: number;
+  originalArticleId: number;
 
   @Expose()
   boardId: number;
@@ -18,9 +18,6 @@ export class DeletedArticleResponseDto {
 
   @Expose()
   content: string;
-
-  @Expose()
-  type: string;
 
   @Expose()
   views: number;

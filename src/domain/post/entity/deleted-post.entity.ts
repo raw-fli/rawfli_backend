@@ -9,9 +9,6 @@ export class DeletedPost {
   originalPostId!: number;
 
   @Column()
-  boardId!: number;
-
-  @Column()
   authorId!: number;
 
   @Column('text')
@@ -19,9 +16,6 @@ export class DeletedPost {
 
   @Column('text')
   content!: string;
-
-  @Column('text')
-  type!: string;
 
   @Column({ default: 0 })
   views!: number;

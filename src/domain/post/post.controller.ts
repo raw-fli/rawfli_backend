@@ -27,7 +27,7 @@ import { PostQueryDto } from 'src/domain/post/dto/post-query.dto';
 import { SetCoverPhotoDto } from 'src/domain/post/dto/set-cover-photo.dto';
 
 @ApiTags('posts')
-@Controller('api/v1/boards/:boardId/posts')
+@Controller('api/v1/posts')
 export class PostsController {
   constructor(private readonly postsService: PostsService) { }
 
@@ -35,11 +35,9 @@ export class PostsController {
   @ApiOkResponse({ type: ApiResponse(PostListResponseDto) })
   @Get()
   async getPosts(
-    @Param('boardId', ParseIntPipe) boardId: number,
     @Query() query: PostQueryDto,
   ): Promise<Try<PostListResponseDto>> {
     const result = await this.postsService.getPosts(
-      boardId,
       query.page,
       query.limit,
     );
@@ -50,11 +48,9 @@ export class PostsController {
   @ApiOkResponse({ type: ApiResponse(PostListResponseDto) })
   @Get('popular')
   async getPopularPosts(
-    @Param('boardId', ParseIntPipe) boardId: number,
     @Query() query: PostQueryDto,
   ): Promise<Try<PostListResponseDto>> {
     const result = await this.postsService.getPopularPosts(
-      boardId,
       query.page,
       query.limit,
     );
@@ -67,10 +63,9 @@ export class PostsController {
   @Post()
   async createPost(
     @UserDecorator() user: DecodedUserToken,
-    @Param('boardId', ParseIntPipe) boardId: number,
     @Body() dto: CreatePostDto,
   ): Promise<Try<PostResponseDto>> {
-    const post = await this.postsService.createPost(user, boardId, dto);
+    const post = await this.postsService.createPost(user, dto);
     return createResponseForm(post);
   }
 
@@ -78,10 +73,9 @@ export class PostsController {
   @ApiOkResponse({ type: ApiResponse(PostResponseDto) })
   @Get(':postId')
   async getPost(
-    @Param('boardId', ParseIntPipe) boardId: number,
     @Param('postId', ParseIntPipe) postId: number,
   ): Promise<Try<PostResponseDto>> {
-    const post = await this.postsService.getPost(boardId, postId);
+    const post = await this.postsService.getPost(postId);
     return createResponseForm(post);
   }
 
@@ -91,10 +85,9 @@ export class PostsController {
   @Delete(':postId')
   async deletePost(
     @UserDecorator() user: DecodedUserToken,
-    @Param('boardId', ParseIntPipe) boardId: number,
     @Param('postId', ParseIntPipe) postId: number,
   ): Promise<Try<DeletedPostResponseDto>> {
-    const deleted = await this.postsService.deletePost(user, boardId, postId);
+    const deleted = await this.postsService.deletePost(user, postId);
     return createResponseForm(deleted);
   }
 
@@ -104,11 +97,10 @@ export class PostsController {
   @Patch(':postId/cover')
   async setPostCoverPhoto(
     @UserDecorator() user: DecodedUserToken,
-    @Param('boardId', ParseIntPipe) boardId: number,
     @Param('postId', ParseIntPipe) postId: number,
     @Body() dto: SetCoverPhotoDto,
   ): Promise<Try<PostResponseDto>> {
-    const updated = await this.postsService.setPostCoverPhoto(user, boardId, postId, dto.photoId ?? null);
+    const updated = await this.postsService.setPostCoverPhoto(user, postId, dto.photoId ?? null);
     return createResponseForm(updated);
   }
 
@@ -118,12 +110,11 @@ export class PostsController {
   @Post(':postId/photos/:photoId/comments')
   async createPhotoComment(
     @UserDecorator() user: DecodedUserToken,
-    @Param('boardId', ParseIntPipe) boardId: number,
     @Param('postId', ParseIntPipe) postId: number,
     @Param('photoId') photoId: string,
     @Body() dto: CreateCommentDto,
   ): Promise<Try<CommentResponseDto>> {
-    const comment = await this.postsService.createPhotoComment(user, boardId, postId, photoId, dto);
+    const comment = await this.postsService.createPhotoComment(user, postId, photoId, dto);
     return createResponseForm(comment);
   }
 
@@ -133,12 +124,11 @@ export class PostsController {
   @Delete(':postId/photos/:photoId/comments/:commentId')
   async deletePhotoComment(
     @UserDecorator() user: DecodedUserToken,
-    @Param('boardId', ParseIntPipe) boardId: number,
     @Param('postId', ParseIntPipe) postId: number,
     @Param('photoId') photoId: string,
     @Param('commentId', ParseIntPipe) commentId: number,
   ): Promise<Try<DeletedCommentResponseDto>> {
-    const deleted = await this.postsService.deletePhotoComment(user, boardId, commentId);
+    const deleted = await this.postsService.deletePhotoComment(user, postId, photoId, commentId);
     return createResponseForm(deleted);
   }
 }

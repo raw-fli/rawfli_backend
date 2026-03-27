@@ -6,7 +6,6 @@ import {
   ManyToMany,
   ManyToOne,
   OneToMany,
-  PrimaryColumn,
   Relation,
 } from 'typeorm';
 import { Board } from 'src/domain/board/entity/board.entity';
@@ -18,7 +17,6 @@ import { CommonColumns } from 'src/common/entities/common-columns';
 
 @Entity()
 export class Article extends CommonColumns {
-  @PrimaryColumn({ type: 'int', name: 'boardId' })
   @ManyToOne(() => Board, (board) => board.articles)
   @JoinColumn({ name: 'boardId' })
   board!: Board;
