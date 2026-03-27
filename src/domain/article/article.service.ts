@@ -72,7 +72,7 @@ export class ArticleService {
     await this.validateCommunityBoard(boardId);
 
     const [articles, total] = await this.articleRepository.findAndCount({
-      where: { board: boardId as any },
+      where: { board: { id: boardId } },
       relations: ['author', 'attachedImages', 'referencedPhotos', 'referencedPhotos.image'],
       order: { id: 'DESC' },
       skip: (page - 1) * limit,
@@ -109,12 +109,12 @@ export class ArticleService {
       ${GRAVITY}
     )`;
 
-    const total = await this.articleRepository.count({ where: { board: boardId as any } });
+    const total = await this.articleRepository.count({ where: { board: { id: boardId } } });
 
     const ranked = await this.articleRepository
       .createQueryBuilder('article')
       .select(['article.id'])
-      .where('article.board = :boardId', { boardId })
+      .where('article.boardId = :boardId', { boardId })
       .orderBy(hnScore, 'DESC')
       .skip((page - 1) * limit)
       .take(limit)
@@ -129,7 +129,7 @@ export class ArticleService {
         .leftJoinAndSelect('article.author', 'author')
         .leftJoinAndSelect('article.attachedImages', 'attachedImages')
         .leftJoinAndSelect('article.referencedPhotos', 'referencedPhotos')
-        .where('article.board = :boardId AND article.id IN (:...ids)', { boardId, ids: articleIds })
+        .where('article.boardId = :boardId AND article.id IN (:...ids)', { boardId, ids: articleIds })
         .getMany();
 
       const byId = new Map(articlesMap.map((a) => [a.id, a]));
@@ -154,7 +154,7 @@ export class ArticleService {
     await this.validateCommunityBoard(boardId);
 
     const article = await this.articleRepository.findOne({
-      where: { id: articleId, board: boardId as any },
+      where: { id: articleId, board: { id: boardId } },
       relations: [
         'author',
         'comments', 'comments.parent', 'comments.author',
@@ -182,7 +182,7 @@ export class ArticleService {
     await this.validateCommunityBoard(boardId);
 
     const article = await this.articleRepository.findOne({
-      where: { id: articleId, board: boardId as any },
+      where: { id: articleId, board: { id: boardId } },
       relations: ['author'],
     });
 
@@ -216,7 +216,7 @@ export class ArticleService {
     await this.validateCommunityBoard(boardId);
 
     const article = await this.articleRepository.findOne({
-      where: { id: articleId, board: boardId as any },
+      where: { id: articleId, board: { id: boardId } },
       relations: ['likes'],
     });
 
@@ -245,7 +245,7 @@ export class ArticleService {
     await this.validateCommunityBoard(boardId);
 
     const article = await this.articleRepository.findOne({
-      where: { id: articleId, board: boardId as any },
+      where: { id: articleId, board: { id: boardId } },
     });
 
     if (!article) {
@@ -259,7 +259,7 @@ export class ArticleService {
 
     if (dto.parentId) {
       const parentComment = await this.commentRepository.findOne({
-        where: { id: dto.parentId, article: { id: articleId, board: boardId as any } },
+        where: { id: dto.parentId, article: { id: articleId, board: { id: boardId } } },
       });
 
       if (!parentComment) {
