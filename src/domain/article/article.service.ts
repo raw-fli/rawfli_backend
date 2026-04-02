@@ -198,14 +198,16 @@ async editArticle(user: DecodedUserToken, boardId: number, articleId: number, dt
     article.title = dto.title;
     article.content = dto.content;
 
-    if (dto.referencedPhotoIds && dto.referencedPhotoIds.length > 0) {
-      const photos = await manager.findBy(Photo, { id: In(dto.referencedPhotoIds) });
-      article.referencedPhotos = photos;
+    if (dto.referencedPhotoIds !== undefined) {
+      article.referencedPhotos = dto.referencedPhotoIds.length > 0
+        ? await manager.findBy(Photo, { id: In(dto.referencedPhotoIds) })
+        : [];
     }
 
-    if (dto.imageIds && dto.imageIds.length > 0) {
-      const images = await manager.findBy(Image, { id: In(dto.imageIds) });
-      article.attachedImages = images;
+    if (dto.imageIds !== undefined) {
+      article.attachedImages = dto.imageIds.length > 0
+        ? await manager.findBy(Image, { id: In(dto.imageIds) })
+        : [];
     }
 
     const saved = await manager.save(Article, article);
