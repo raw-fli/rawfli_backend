@@ -1,6 +1,7 @@
 import { Type } from 'class-transformer';
 import {
   IsArray,
+  IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
@@ -58,9 +59,11 @@ export class CreatePostPhotoDto {
 
 export class CreatePostDto {
   @IsString({ message: '제목을 입력해주세요.' })
+  @IsNotEmpty({ message: '제목을 입력해주세요.' })
   title: string;
 
   @IsString({ message: '내용을 입력해주세요.' })
+  @IsNotEmpty({ message: '내용을 입력해주세요.' })
   content: string;
 
   @IsOptional()
