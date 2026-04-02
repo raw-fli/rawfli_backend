@@ -14,7 +14,7 @@ export class AdminImageResponseDto {
   @Expose()
   key: string;
 
-  @ApiProperty({ nullable: true, required: false, type: 'object' })
+  @ApiProperty({ nullable: true, required: false, type: Object })
   @Expose()
   exifData: ExifData | null;
 

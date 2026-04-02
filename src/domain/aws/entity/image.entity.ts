@@ -23,7 +23,7 @@ export class Image extends CreatedAtColumn {
   @Column({ type: 'text', unique: true })
   key!: string;
 
-  @ApiProperty({ type: 'object', nullable: true, required: false })
+  @ApiProperty({ type: Object, nullable: true, required: false })
   @Column({ type: 'jsonb', nullable: true })
   exifData!: ExifData | null;
 
