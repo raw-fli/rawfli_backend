@@ -6,8 +6,7 @@ export class UserResponseDto {
   @Expose()
   id: number;
 
-  @ApiProperty()
-  @Expose()
+  @Exclude()
   email: string;
 
   @ApiProperty()
