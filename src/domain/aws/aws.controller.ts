@@ -1,15 +1,15 @@
-import { Controller, Get, Post, Query, UploadedFiles, UseGuards, UseInterceptors } from "@nestjs/common";
-import { FilesInterceptor } from "@nestjs/platform-express";
-import { ApiBody, ApiConsumes, ApiOkResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
+import { Body, Controller, Get, Post, Query, UseGuards } from "@nestjs/common";
+import { ApiOkResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { JwtGuard } from "src/domain/auth/guards/jwt.guard";
 import { UserDecorator } from "src/common/decorators/user.decorator";
-import { Image } from "src/domain/aws/entity/image.entity";
 import { DecodedUserToken } from "src/domain/user/entity/user.entity";
 import { AwsService } from "src/domain/aws/aws.service";
 import { createResponseForm, Try } from "src/common/types";
 import { MyImageQueryDto } from "src/domain/aws/dto/my-image-query.dto";
 import { MyImageListResponseDto } from "src/domain/aws/dto/my-image.response.dto";
 import { ApiResponse } from "src/common/dtos/api-response.dto";
+import { CreatePresignedUploadUrlDto } from "src/domain/aws/dto/create-presigned-upload-url.dto";
+import { PresignedUploadUrlResponseDto } from "src/domain/aws/dto/presigned-upload-url.response.dto";
 
 @ApiTags('aws')
 @Controller('api/v1/aws')
@@ -32,31 +32,15 @@ export class AwsController {
     return createResponseForm(result);
   }
 
-  @ApiOperation({ summary: '이미지 업로드' })
-  @ApiOkResponse({ type: Image, isArray: true })
+  @ApiOperation({ summary: '이미지 업로드용 presigned URL 발급' })
+  @ApiOkResponse({ type: ApiResponse(PresignedUploadUrlResponseDto) })
   @UseGuards(JwtGuard)
-  @ApiConsumes('multipart/form-data')
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        images: {
-          type: 'array',
-          items: {
-            type: 'string',
-            format: 'binary',
-          },
-        },
-      },
-    },
-  })
-  @Post('upload')
-  @UseInterceptors(FilesInterceptor('images'))
-  async uploadFile(
+  @Post('upload/presigned-urls')
+  async createUploadPresignedUrls(
     @UserDecorator() user: DecodedUserToken,
-    @UploadedFiles() images: Express.Multer.File[],
-  ): Promise<Try<Image[]>> {
-    const imageEntities = await this.awsService.uploadImages(user, images);
-    return createResponseForm(imageEntities);
+    @Body() dto: CreatePresignedUploadUrlDto,
+  ): Promise<Try<PresignedUploadUrlResponseDto>> {
+    const result = await this.awsService.createPresignedUploadUrls(user, dto);
+    return createResponseForm(result);
   }
 }
