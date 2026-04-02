@@ -178,6 +178,41 @@ export class ArticleService {
     return dto;
   }
 
+async editArticle(user: DecodedUserToken, boardId: number, articleId: number, dto: CreateArticleDto): Promise<ArticleResponseDto> {
+  await this.validateCommunityBoard(boardId);
+
+  const article = await this.articleRepository.findOne({
+    where: { id: articleId, board: { id: boardId } },
+    relations: ['author'],
+  });
+
+  if (!article) {
+    throw new NotFoundException(createError(ErrorCode.ARTICLE_NOT_FOUND));
+  }
+
+  if (article.author.id !== user.id) {
+    throw new BadRequestException(createError(ErrorCode.NO_PERMISSION_TO_EDIT));
+  }
+
+  return await this.dataSource.transaction(async (manager) => {
+    article.title = dto.title;
+    article.content = dto.content;
+
+    if (dto.referencedPhotoIds && dto.referencedPhotoIds.length > 0) {
+      const photos = await manager.findBy(Photo, { id: In(dto.referencedPhotoIds) });
+      article.referencedPhotos = photos;
+    }
+
+    if (dto.imageIds && dto.imageIds.length > 0) {
+      const images = await manager.findBy(Image, { id: In(dto.imageIds) });
+      article.attachedImages = images;
+    }
+
+    const saved = await manager.save(Article, article);
+    return plainToInstance(ArticleResponseDto, saved, { excludeExtraneousValues: true });
+  });
+}
+
   async deleteArticle(user: DecodedUserToken, boardId: number, articleId: number): Promise<DeletedArticleResponseDto> {
     await this.validateCommunityBoard(boardId);
 

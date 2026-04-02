@@ -86,6 +86,21 @@ export class ArticleController {
     return createResponseForm(article);
   }
 
+  @ApiOperation({ summary: '게시글 수정' })
+  @ApiBearerAuth()
+  @ApiOkResponse({ type: ApiResponse(ArticleResponseDto) })
+  @UseGuards(JwtGuard)
+  @Post(':articleId')
+  async editArticle(
+    @UserDecorator() user: DecodedUserToken,
+    @Param('boardId', ParseIntPipe) boardId: number,
+    @Param('articleId', ParseIntPipe) articleId: number,
+    @Body() dto: CreateArticleDto,
+  ): Promise<Try<ArticleResponseDto>> {
+    const article = await this.articleService.editArticle(user, boardId, articleId, dto);
+    return createResponseForm(article);
+  }
+
   @ApiOperation({ summary: '게시글 삭제' })
   @ApiBearerAuth()
   @ApiOkResponse({ type: ApiResponse(DeletedArticleResponseDto) })
